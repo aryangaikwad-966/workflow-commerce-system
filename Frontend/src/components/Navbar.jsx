@@ -32,10 +32,10 @@ const Navbar = () => {
                     </Link>
                 </li>
 
-                {currentUser && (
+                {currentUser && currentUser.roles && currentUser.roles.includes("ROLE_ADMIN") && (
                     <li className="nav-item">
-                        <Link to={"/orders"} className="nav-link">
-                            My Orders
+                        <Link to={"/admin/categories"} className="nav-link text-warning">
+                            Category Management
                         </Link>
                     </li>
                 )}

@@ -6,6 +6,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
+import CategoryDashboard from "./pages/Admin/CategoryDashboard";
 
 const Home = () => (
   <div className="container mt-5">
@@ -27,6 +28,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/categories" element={<CategoryDashboard />} />
         </Routes>
       </div>
     </div>
