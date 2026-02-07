@@ -35,32 +35,32 @@ const Login = () => {
     };
 
     return (
-        <div className="container animate-fade-in py-5">
-            <div className="row justify-content-center">
-                <div className="col-md-5">
+        <div className="container min-vh-100 d-flex align-items-center justify-content-center animate-slide-up">
+            <div className="row w-100 justify-content-center">
+                <div className="col-md-5 col-lg-4">
                     <div className="glass-card p-5">
                         <div className="text-center mb-5">
-                            <h2 className="fw-bold">Welcome Back</h2>
-                            <p className="text-muted">Sign in to your account to continue</p>
+                            <h2 className="fw-bold font-premium">Sign In</h2>
+                            <p className="text-muted small">Access the Workflow Console</p>
                         </div>
                         <form onSubmit={handleLogin}>
                             <div className="mb-3">
-                                <label className="form-label small text-uppercase fw-semibold">Username</label>
+                                <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Username</label>
                                 <input
                                     type="text"
-                                    className="form-control form-control-premium"
+                                    className="form-control form-control-premium text-white"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Enter your username"
+                                    placeholder="Enter username"
                                     required
                                 />
                             </div>
 
                             <div className="mb-4">
-                                <label className="form-label small text-uppercase fw-semibold">Password</label>
+                                <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Password</label>
                                 <input
                                     type="password"
-                                    className="form-control form-control-premium"
+                                    className="form-control form-control-premium text-white"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
@@ -68,17 +68,21 @@ const Login = () => {
                                 />
                             </div>
 
-                            <button className="btn btn-premium w-100 py-3 mb-3" disabled={loading}>
+                            <button className="btn-premium w-100 py-3 mb-4" disabled={loading}>
                                 {loading ? (
                                     <span className="spinner-border spinner-border-sm"></span>
-                                ) : "Sign In"}
+                                ) : "Authenticate"}
                             </button>
 
                             {message && (
-                                <div className="alert bg-danger-subtle text-danger border-0 rounded-3 small text-center" role="alert">
+                                <div className="alert bg-danger bg-opacity-10 text-danger border-0 rounded-3 small text-center py-2" role="alert">
                                     {message}
                                 </div>
                             )}
+
+                            <p className="text-center text-muted small mt-2">
+                                New here? <Link to="/register" className="text-white text-decoration-none fw-medium">Create account</Link>
+                            </p>
                         </form>
                     </div>
                 </div>

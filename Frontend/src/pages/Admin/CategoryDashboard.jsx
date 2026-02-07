@@ -70,57 +70,57 @@ const CategoryDashboard = () => {
     };
 
     return (
-        <div className="container mt-5 py-4 animate-fade-in">
-            <div className="d-flex justify-content-between align-items-center mb-5">
+        <div className="container-fluid py-5 animate-slide-up" style={{ maxWidth: '1200px' }}>
+            <div className="d-flex justify-content-between align-items-end mb-5">
                 <div>
-                    <h2 className="fw-bold mb-1">Category Management</h2>
-                    <p className="text-muted small">Manage your product groups and their availability</p>
+                    <h2 className="fw-bold mb-1 font-premium">Infrastructure Console</h2>
+                    <p className="text-muted small mb-0">Management of global product categories and taxonomy systems</p>
                 </div>
-                <button className="btn btn-premium d-flex align-items-center" onClick={() => handleOpenModal()}>
-                    <span className="me-2">+</span> Add Category
+                <button className="btn-premium py-2 px-4 shadow-sm" onClick={() => handleOpenModal()}>
+                    <span className="me-2">+</span> Initialize Category
                 </button>
             </div>
 
             {categories.length === 0 ? (
-                <div className="glass-card p-5 text-center">
-                    <p className="lead">No categories have been established yet.</p>
+                <div className="glass-card p-5 text-center border-dashed">
+                    <p className="text-muted mb-0">No taxonomic data found. Initialize your first category to begin.</p>
                 </div>
             ) : (
-                <div className="glass-card overflow-hidden shadow-lg border-0">
+                <div className="glass-card overflow-hidden">
                     <div className="table-responsive">
                         <table className="table table-dark table-hover mb-0 align-middle">
-                            <thead className="bg-dark-subtle">
+                            <thead className="bg-white bg-opacity-5">
                                 <tr>
-                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted">Category</th>
-                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted">Description</th>
-                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted">Availability</th>
-                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted text-end">Actions</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted border-0" style={{ fontSize: '11px' }}>Taxonomy Name</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted border-0" style={{ fontSize: '11px' }}>Context Description</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted border-0" style={{ fontSize: '11px' }}>Deployment Status</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted border-0 text-end" style={{ fontSize: '11px' }}>Operations</th>
                                 </tr>
                             </thead>
-                            <tbody className="border-top-0">
+                            <tbody>
                                 {categories.map((cat) => (
-                                    <tr key={cat.category_id} className="border-bottom border-light-subtle">
-                                        <td className="px-4 py-4 fw-medium">{cat.category_name}</td>
-                                        <td className="px-4 py-4 text-muted small">{cat.description || "—"}</td>
+                                    <tr key={cat.category_id} className="border-bottom border-white border-opacity-5">
+                                        <td className="px-4 py-4 fw-semibold text-white">{cat.category_name}</td>
+                                        <td className="px-4 py-4 text-muted small">{cat.description || "No description provided"}</td>
                                         <td className="px-4 py-4">
-                                            <span className={`badge rounded-pill px-3 py-2 ${cat.status ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
-                                                {cat.status ? '● Active' : '○ Inactive'}
+                                            <span className={`badge-premium ${cat.status ? 'text-success' : 'text-danger'}`} style={{ background: cat.status ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}>
+                                                {cat.status ? '● Fully Operational' : '○ Decommissioned'}
                                             </span>
                                         </td>
                                         <td className="px-4 py-4 text-end">
                                             <button
-                                                className="btn btn-sm btn-outline-light border-0 me-2"
+                                                className="btn btn-secondary-premium btn-sm border-0 me-2"
                                                 onClick={() => handleOpenModal(cat)}
                                                 disabled={!cat.status}
                                             >
-                                                Edit
+                                                Configure
                                             </button>
                                             {cat.status && (
                                                 <button
-                                                    className="btn btn-sm btn-outline-danger border-0"
+                                                    className="btn btn-secondary-premium btn-sm border-0 text-danger"
                                                     onClick={() => handleDeactivate(cat.category_id)}
                                                 >
-                                                    Deactivate
+                                                    Retire
                                                 </button>
                                             )}
                                         </td>
@@ -134,42 +134,42 @@ const CategoryDashboard = () => {
 
             {/* Modal for Create/Edit */}
             {showModal && (
-                <div className="modal show d-block animate-fade-in" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)' }}>
+                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(2, 6, 23, 0.85)', backdropFilter: 'blur(10px)' }}>
                     <div className="modal-dialog modal-dialog-centered">
-                        <div className="glass-card p-4 w-100 mx-3 border shadow-2xl">
-                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h4 className="fw-bold m-0">{editMode ? 'Edit Configuration' : 'New Category'}</h4>
-                                <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
+                        <div className="glass-card p-5 w-100 mx-3 border border-white border-opacity-10">
+                            <div className="d-flex justify-content-between align-items-center mb-5">
+                                <h4 className="fw-bold m-0 font-premium">{editMode ? 'Update Configuration' : 'Provision Category'}</h4>
+                                <button type="button" className="btn-close btn-close-white opacity-50" onClick={handleCloseModal}></button>
                             </div>
                             <form onSubmit={handleSubmit}>
-                                {message && <div className="alert bg-danger-subtle text-danger border-0 small mb-4">{message}</div>}
+                                {message && <div className="alert bg-danger bg-opacity-10 text-danger border-0 small mb-4">{message}</div>}
                                 <div className="mb-4">
-                                    <label className="form-label small text-uppercase fw-semibold text-muted">Display Name</label>
+                                    <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Identifer (Name)</label>
                                     <input
                                         type="text"
                                         className="form-control form-control-premium text-white"
                                         name="category_name"
                                         value={currentCategory.category_name}
                                         onChange={handleInputChange}
-                                        placeholder="e.g. Infrastructure"
+                                        placeholder="e.g. Computing Systems"
                                         required
                                     />
                                 </div>
-                                <div className="mb-4">
-                                    <label className="form-label small text-uppercase fw-semibold text-muted">Summary Description</label>
+                                <div className="mb-5">
+                                    <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Functional Scope (Description)</label>
                                     <textarea
                                         className="form-control form-control-premium text-white"
                                         name="description"
-                                        rows="3"
+                                        rows="4"
                                         value={currentCategory.description}
                                         onChange={handleInputChange}
-                                        placeholder="Briefly describe this category scope..."
+                                        placeholder="Describe the operational scope of this category..."
                                         maxLength="300"
                                     ></textarea>
                                 </div>
-                                <div className="d-flex gap-2">
-                                    <button type="submit" className="btn btn-premium flex-grow-1 py-2">{editMode ? 'Confirm Changes' : 'Initialize Category'}</button>
-                                    <button type="button" className="btn btn-outline-secondary px-4" onClick={handleCloseModal}>Abort</button>
+                                <div className="d-flex gap-2 justify-content-end">
+                                    <button type="button" className="btn btn-link text-muted text-decoration-none small" onClick={handleCloseModal}>Cancel</button>
+                                    <button type="submit" className="btn-premium px-4 py-2">{editMode ? 'Apply Updates' : 'Confirm Provisioning'}</button>
                                 </div>
                             </form>
                         </div>

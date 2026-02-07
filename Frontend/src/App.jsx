@@ -9,31 +9,37 @@ import Register from "./pages/Register/Register";
 import CategoryDashboard from "./pages/Admin/CategoryDashboard";
 
 const Home = () => (
-  <div className="container mt-5 py-5 animate-fade-in text-center">
-    <div className="row justify-content-center">
-      <div className="col-lg-8">
-        <h1 className="display-3 fw-bold mb-4" style={{ background: 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Next-Gen Workflow Commerce
-        </h1>
-        <p className="lead text-muted mb-5 fs-4">
-          The only state-machine driven platform designed for precision,
-          scalability, and institutional-grade commerce operations.
-        </p>
-        <div className="d-flex justify-content-center gap-3">
-          <Link to="/register" className="btn btn-premium px-5 py-3">Explore Now</Link>
-          <Link to="/login" className="btn btn-outline-light px-5 py-3 rounded-3">Sign In</Link>
-        </div>
-      </div>
+  <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center animate-slide-up">
+    <div className="badge border border-primary text-primary px-3 py-2 rounded-pill mb-4 small fw-bold">
+      AVAILABLE NOW: TASK 1 MODULE COMPLETE
+    </div>
+    <h1 className="display-2 fw-bold mb-4 font-premium" style={{ letterSpacing: '-0.02em', background: 'linear-gradient(to bottom, #fff 40%, #94a3b8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      Workflow-Driven<br />Commerce Infrastructure.
+    </h1>
+    <p className="lead text-muted mb-5 max-w-2xl mx-auto fs-5" style={{ maxWidth: '600px' }}>
+      A state-of-the-art platform for managing complex ecommerce workflows
+      with institutional-grade precision and real-time state tracking.
+    </p>
+    <div className="d-flex gap-3">
+      <Link to="/register" className="btn-premium px-5 py-3 shadow-lg">Get Started</Link>
+      <Link to="/login" className="btn-secondary-premium px-5 py-3">Sign In</Link>
     </div>
   </div>
+);
+
+const Footer = () => (
+  <footer className="container py-5 mt-5 border-top border-secondary border-opacity-10 text-center">
+    <p className="text-muted small mb-0">© 2026 Workflow Commerce. Engineered for high-performance commerce.</p>
+  </footer>
 );
 
 function App() {
   return (
     <div>
+      <div className="bg-mesh"></div>
       <Navbar />
 
-      <div className="container mt-3">
+      <div className="container">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
@@ -42,6 +48,7 @@ function App() {
           <Route path="/admin/categories" element={<CategoryDashboard />} />
         </Routes>
       </div>
+      <Footer />
     </div>
   );
 }
