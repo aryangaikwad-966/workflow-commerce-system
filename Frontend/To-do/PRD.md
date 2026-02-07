@@ -1,221 +1,69 @@
-
-
-# 📄 Product Requirements Document (PRD)
-
-## 1. Product Overview
-
-**Product Name:** Workflow / State-Machine-Driven Commerce System
-**Type:** Full-Stack Web Application
-**Domain:** E-Commerce (Order Management & Workflow Control)
-
-### Purpose
-
-To build a commerce system where **all order-related actions are governed by an explicit workflow/state machine**, ensuring correctness, security, and maintainability.
+# 📄 Product Requirements Document (PRD): Workflow Commerce Platform
+> **Strategic Intent: Deterministic Lifecycle Orchestration**
 
 ---
 
-## 2. Problem Statement
-
-Traditional e-commerce systems often rely on scattered conditional logic (`if/else`) to manage order states, leading to:
-
-* Invalid actions (e.g., refund before payment)
-* Inconsistent order data
-* Difficult debugging and maintenance
-
-There is a need for a **deterministic, rule-driven workflow system** that enforces valid transitions and blocks illegal actions.
+## 1. Executive Summary
+The Workflow Commerce Platform is designed to solve the critical industry challenge of **state inconsistency** in transactional systems. By utilizing a "Backend-First" state machine architecture, the product ensures that every order follows a mathematically verified path, eliminating illegal transitions and significantly reducing operational risk.
 
 ---
 
-## 3. Goals & Objectives
-
-* Enforce **strict order lifecycle rules**
-* Prevent invalid business actions
-* Provide **clear visibility** of order states
-* Build a **real-world, production-oriented backend**
-* Fully comply with internship requirements (A→Z)
-
----
-
-## 4. Scope
-
-### In Scope
-
-* User & Admin workflows
-* Order lifecycle management using a state machine
-* Payment, cancellation, refund, and fulfillment flows
-* Role-based access control
-* Live deployment and documentation
-
-### Out of Scope
-
-* AI-based recommendations
-* Advanced UI animations
-* Multi-vendor marketplace logic
+## 2. Strategic Objectives
+| Objective | Description |
+| :--- | :--- |
+| **Deterministic Reliability** | Eliminate scattered `if/else` logic in favor of a centralized workflow engine. |
+| **Security-First UX** | Provide a "self-correcting" UI where user actions are strictly limited to their authorized state-space. |
+| **Operational Transparency** | 100% observability through immutable audit trails for every state change. |
+| **Scalable Foundation** | Modularize the catalog and order systems to support high-concurrency commerce. |
 
 ---
 
-## 5. User Roles
+## 3. Core Modules & Roadmap
 
-### User
+### 🏁 Task 1: Foundation & Governance (Current State: COMPLETE)
+- **Category Management**: Hierarchical taxonomy setup with Soft-Delete functionality.
+- **Identity & Access (IAM)**: JWT-based authentication with Role-Based Access Control (RBAC).
+- **Admin Console**: Centralized interface for infrastructure management.
 
-* Register / Login
-* Create order
-* Make payment
-* View order status
-* Cancel order (only in allowed states)
+### 📦 Task 2: Product Proliferation (Upcoming)
+- **Unified Catalog**: Implementation of the `Product` entity linked to the `Category` taxonomy.
+- **Inventory Control**: Basic stock tracking synced with the state machine.
+- **Public Storefront**: Modern discovery interface for end-users.
 
-### Admin
-
-* View all orders
-* Ship orders
-* Mark orders as delivered
-* Force refunds (with reason)
-* View audit logs
-
----
-
-## 6. Workflow / State Machine Design
-
-### Order States
-
-* `CREATED`
-* `PAID`
-* `SHIPPED`
-* `DELIVERED`
-* `CANCELLED`
-* `REFUNDED`
-
-### Allowed Transitions
-
-* `CREATED → PAID`
-* `CREATED → CANCELLED`
-* `PAID → SHIPPED`
-* `PAID → REFUNDED`
-* `SHIPPED → DELIVERED`
-
-❌ All other transitions are blocked by backend validation.
+### ⚙️ Task 3: The State Machine Engine (Advanced)
+- **Order Orchestration**: Implementation of the `Order` entity and the `WorkflowService`.
+- **State Matrix**: Mapping of transitions (CREATED → PAID → SHIPPED, etc.).
+- **Transaction Safety**: Rollback mechanisms for failed transitions.
 
 ---
 
-## 7. Functional Requirements
+## 4. User Personas & Epic Stories
 
-### Backend
+### 👤 Persona: The Customer (Agent)
+- **Epic**: *As a customer, I want a seamless, predictable checkout flow so that my purchase status is always transparent.*
+- **Outcome**: Deterministic state badges and enabled buttons based on order progress.
 
-* REST APIs for all operations
-* Centralized Workflow Engine:
-
-  * Validates transitions
-  * Enforces role permissions
-* JWT-based authentication
-* Role-based authorization
-* SQL database with proper relationships
-* Audit logging for state changes
-
-### Frontend
-
-* React-based UI
-* User Dashboard (My Orders, Status)
-* Admin Dashboard (All Orders, Actions)
-* Navigation bar (Login, Register, Orders, Dashboard)
-* Responsive and consistent UI
-* Buttons enabled/disabled based on order state
+### 🛡️ Persona: The Administrator (Architect)
+- **Epic**: *As an admin, I want to govern the global catalog and order fulfillment cycle so that operational errors are physically impossible.*
+- **Outcome**: Access to the "Infrastructure Console" with exclusive rights to ship or refund.
 
 ---
 
-## 8. Database Requirements
+## 5. Functional Requirements (High Level)
+### 5.1 Infrastructure & Taxonomy
+- **FR_1.1**: The system must support Category creation with a status-driven lifecycle (Soft Delete).
+- **FR_1.2**: Name uniqueness must be enforced at the database level to prevent catalog pollution.
 
-### Tables
-
-* User
-* Role
-* Product
-* Order
-* Payment
-* AuditLog
-
-### Relationships
-
-* User → Orders (one-to-many)
-* Order → Products (many-to-many)
-* Order → Payment (one-to-one)
+### 5.2 Deterministic Workflow
+- **FR_2.1**: Every order must transition exactly as defined in the **Transition Matrix**.
+- **FR_2.2**: Unauthorized transition attempts must result in standardized 403/Forbidden responses.
 
 ---
 
-## 9. Non-Functional Requirements
-
-* Responsive UI (desktop & mobile)
-* Clean and intuitive UX
-* Secure APIs
-* Maintainable codebase
-* Clear documentation
-* High availability via live deployment
+## 6. Success Metrics (KPIs)
+- **Transaction Integrity**: 0% illegal state transitions in production.
+- **UI Performance**: < 100ms response time for state-dependent button rendering.
+- **Security Compliance**: 100% of protected endpoints must require a valid JWT with the appropriate role.
 
 ---
-
-## 10. GitHub & Dev Workflow
-
-* Single GitHub repository
-* Modular commits after each task
-* Meaningful commit messages
-* Proper `README.md`
-* Code pushed after every module
-
----
-
-## 11. Deployment
-
-* Live deployment on cloud platform
-* Publicly accessible URL
-* Redeployment after each major module
-* Application available 24×7 for evaluation
-
----
-
-## 12. Documentation
-
-* End-user documentation
-* Step-by-step usage guide
-* Screenshots of UI flows
-* State diagrams
-* Setup & configuration instructions
-
----
-
-## 13. Internship Alignment
-
-* Modular task-based development
-* Submission per module
-* Mentor review & approval
-* Project mock evaluation
-* Live demo & explanation
-* Certification upon successful completion
-
----
-
-## 14. Success Metrics
-
-* All internship requirements satisfied
-* All mentor approvals received
-* Successful mock evaluation
-* Fully working deployed system
-* Clear demonstration of workflow correctness
-
----
-
-## 15. Risks & Mitigation
-
-| Risk                | Mitigation                     |
-| ------------------- | ------------------------------ |
-| Invalid transitions | Central workflow validation    |
-| UI confusion        | State-based button control     |
-| Evaluation issues   | Clear diagrams & documentation |
-
----
-
-## 16. Final Statement
-
-This project demonstrates **real-world backend engineering maturity** by enforcing deterministic workflows in a commerce system, aligning perfectly with internship objectives and postgraduate expectations.
-
----
-
-
+*Document Version: 1.1 | Date: 2026-02-07*

@@ -28,11 +28,11 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createCategory(@Valid @RequestBody Category category) {
         if (categoryRepository.existsByCategory_name(category.getCategory_name())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Category name already exists!"));
+            return ResponseEntity.badRequest().body(new MessageResponse("TAXO_001: Category identity already established in system infrastructure."));
         }
         category.setStatus(true);
         categoryRepository.save(category);
-        return ResponseEntity.ok(new MessageResponse("Category created successfully!"));
+        return ResponseEntity.ok(new MessageResponse("Category provisioned successfully. Operational status: ACTIVE."));
     }
 
     @PutMapping("/{id}")
@@ -42,17 +42,17 @@ public class CategoryController {
             category.setCategory_name(categoryRequest.getCategory_name());
             category.setDescription(categoryRequest.getDescription());
             categoryRepository.save(category);
-            return ResponseEntity.ok(new MessageResponse("Category updated successfully!"));
-        }).orElse(ResponseEntity.notFound().build());
+            return ResponseEntity.ok(new MessageResponse("Category configuration updated. Delta persisted to primary ledger."));
+        }).orElse(ResponseEntity.status(404).body(new MessageResponse("ERROR_404: Resource target not found in infrastructure.")));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deactivateCategory(@PathVariable Long id) {
         return categoryRepository.findById(id).map(category -> {
-            category.setStatus(false);
+            category.setStatus(false); // Determinstic Soft-Delete logic
             categoryRepository.save(category);
-            return ResponseEntity.ok(new MessageResponse("Category deactivated successfully!"));
-        }).orElse(ResponseEntity.notFound().build());
+            return ResponseEntity.ok(new MessageResponse("Category decommissioned. Status: INACTIVE."));
+        }).orElse(ResponseEntity.status(404).body(new MessageResponse("ERROR_404: Resource target not found in infrastructure.")));
     }
 }

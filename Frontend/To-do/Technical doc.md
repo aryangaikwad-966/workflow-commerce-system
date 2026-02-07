@@ -1,327 +1,92 @@
-
-
-# 🧾 Technical Document
-
-![Image](https://www.cs.fsu.edu/~myers/cop3331/notes/examples/UML/LeaveMessage.gif)
-
-![Image](https://miro.medium.com/1%2Ajci9-EvG8xXV0TFFFVQBpQ.jpeg)
-
-![Image](https://repository-images.githubusercontent.com/563231486/038a28f8-2ab0-409d-8df0-e7e434c8bbf4)
+# 🧾 Technical Specification: Workflow Commerce Core
+> **Engineer-Facing Reference | Infrastructure Architecture v1.0**
 
 ---
 
-## 1. Technology Stack
+## 1. Core Implementation Detail: Deterministic Workflow Engine
+The system's distinguishing feature is the **Workflow Engine**, which encapsulates the state transition logic for commerce objects.
 
-### Frontend
-
-* **React 18**
-* Axios (API calls)
-* Bootstrap / MUI (responsive UI)
-* React Router (navigation)
-
-### Backend
-
-* **Java 17**
-* **Spring Boot**
-* Spring Security (JWT)
-* Spring Data JPA (Hibernate)
-* RESTful APIs
-
-### Database
-
-* PostgreSQL / MySQL (SQL)
-
-### Deployment
-
-* Frontend: Netlify / Vercel
-* Backend: Render / Railway / Fly.io
-
----
-
-## 2. Project Structure
-
-### Backend (Spring Boot)
-
-```
-com.example.workflowcommerce
-├── controller
-├── service
-│   ├── WorkflowService
-│   ├── OrderService
-│   └── PaymentService
-├── security
-├── model
-│   ├── Order
-│   ├── User
-│   └── Payment
-├── repository
-├── dto
-└── exception
-```
-
-### Frontend (React)
-
-```
-src/
-├── components
-├── pages
-│   ├── Login
-│   ├── UserDashboard
-│   ├── AdminDashboard
-│   └── OrderDetails
-├── services (API calls)
-└── routes
-```
-
----
-
-## 3. Core Data Models
-
-### Order
-
+### 1.1 State Definition Enums
 ```java
-Order {
-  id
-  userId
-  state (ENUM)
-  totalAmount
-  createdAt
+public enum OrderState {
+    CREATED,    // Initial entry point
+    PAID,       // Post-financial settlement
+    SHIPPED,    // Logistical dispatch
+    DELIVERED,  // Final fulfillment
+    CANCELLED,  // Terminal state - revoked
+    REFUNDED    // Terminal state - reversed
 }
 ```
 
-### OrderState (ENUM)
+### 1.2 Transition Matrix Verification
+The engine enforces a **Positive-Only Transition Matrix**. Any transition not explicitly defined is rejected via a standardized `IllegalStateTransitionException`.
 
+| Current State | Target State | Authorized Role | Requirement |
+| :--- | :--- | :--- | :--- |
+| `CREATED` | `PAID` | `ROLE_USER` | Valid Payment Intent |
+| `CREATED` | `CANCELLED` | `ROLE_USER` | None |
+| `PAID` | `SHIPPED` | `ROLE_ADMIN` | Logistics Token Generation |
+| `PAID` | `REFUNDED` | `ROLE_ADMIN` | Reason Code |
+| `SHIPPED` | `DELIVERED` | `ROLE_ADMIN` | Delivery confirmation |
+
+---
+
+## 2. Infrastructure Layer
+### 2.1 Backend: Spring Boot 3 & Security
+- **Auth Architecture**: Stateless JWT using `HS512` algorithm.
+- **RBAC**: Enforced via `@PreAuthorize` at the Controller layer and granular checks in Service layers.
+- **Persistence**: JPA/Hibernate with optimized indexing on `category_name` and `order_id`.
+
+### 2.2 Frontend: High-Performance React
+- **Rendering**: Vite SSR-compatible frontend architecture.
+- **Interactions**: Axios interceptors for handling 401/403 errors and token injection.
+- **State Driven UI**: Component rendering is gated by both Role and Entity State.
+
+---
+
+## 3. Data Schema: Entity Relationships
+### 3.1 Primary Entities
+- **User**: Identity root with multi-role capability.
+- **Category (Task 1)**: Metadata root for products. Implements **Soft-Delete** via `status` bit.
+- **Product**: Physical item inventory (Upcoming).
+- **Order**: Workflow target containing state-delta history.
+- **AuditLog**: Immutable append-only log of every transition.
+
+### 3.2 Schema Diagram (Logical)
 ```
-CREATED
-PAID
-SHIPPED
-DELIVERED
-CANCELLED
-REFUNDED
-```
-
-### Payment
-
-```java
-Payment {
-  id
-  orderId
-  amount
-  status
-  timestamp
-}
-```
-
-### AuditLog
-
-```java
-AuditLog {
-  id
-  orderId
-  fromState
-  toState
-  actor
-  timestamp
-}
+[User] 1 -- N [Order]
+[Order] 1 -- 1 [Payment]
+[Order] 1 -- N [AuditLog]
+[Category] 1 -- N [Product]
 ```
 
 ---
 
-## 4. Workflow / State Machine Implementation (CORE)
+## 4. Security Protocols
+### 4.1 Token Lifecycle
+- **Issue**: Upon successful `/api/auth/login`.
+- **Validation**: Every request via `AuthTokenFilter`.
+- **Authorization**: Roles prefixed with `ROLE_` as per Spring Security standards.
 
-### Transition Map (Central Rule Engine)
-
-```java
-Map<OrderState, Set<OrderState>> allowedTransitions;
-```
-
-Example:
-
-```
-CREATED → PAID, CANCELLED
-PAID → SHIPPED, REFUNDED
-SHIPPED → DELIVERED
-```
-
-### WorkflowService Logic
-
-1. Fetch order
-2. Read current state
-3. Validate target state
-4. Validate user role
-5. Execute side-effects
-6. Persist new state
-7. Create audit log
-
-❌ Any failure → exception thrown
-
----
-
-## 5. REST API Specification
-
-### Auth
-
-* `POST /auth/register`
-* `POST /auth/login`
-
-### Orders
-
-* `POST /orders` → create order
-* `GET /orders/{id}`
-* `GET /orders/user`
-* `POST /orders/{id}/transition`
-
-### Admin
-
-* `GET /admin/orders`
-* `POST /admin/orders/{id}/transition`
-
-#### Transition Request Payload
-
+### 4.2 Error Handling Schema
+Standardized JSON responses for technical failures:
 ```json
 {
-  "targetState": "PAID"
+  "code": "WORKFLOW_ERROR_403",
+  "status": "FORBIDDEN",
+  "message": "Insufficient authority for SHIPPED transition."
 }
 ```
 
 ---
 
-## 6. Frontend–Backend Interaction
-
-### Frontend Logic
-
-* Fetch order state
-* Show allowed actions only
-* Disable illegal buttons
-
-Example:
-
-```js
-if (order.state === "CREATED") {
-  showPayButton();
-}
-```
-
-### Backend Safety
-
-Even if frontend is bypassed:
-
-* Backend **revalidates transitions**
-* Invalid transitions are rejected
+## 5. Deployment Orchestration
+### 5.1 Environment Configuration
+- **Production**: PostgreSQL 15, Spring Boot Dockerized.
+- **CI/CD**: Auto-deployment triggered by `git push` to `main`.
+- **Environment Variables**:
+    - `SPRING_DATASOURCE_URL`: Target DB.
+    - `APP_JWT_SECRET`: 64-character signing key.
 
 ---
-
-## 7. Security Implementation
-
-### Authentication
-
-* JWT issued on login
-* Token sent via Authorization header
-
-### Authorization
-
-* Role checked per transition
-* Example:
-
-  * USER → PAY, CANCEL
-  * ADMIN → SHIP, DELIVER, REFUND
-
----
-
-## 8. Database Integrity
-
-### Relationships
-
-* User → Orders (1-N)
-* Order → Payment (1-1)
-* Order → AuditLog (1-N)
-
-Foreign keys enforced via JPA annotations.
-
----
-
-## 9. Error Handling
-
-### Global Exception Handler
-
-Handles:
-
-* Invalid transition
-* Unauthorized access
-* Resource not found
-
-Example response:
-
-```json
-{
-  "error": "INVALID_TRANSITION",
-  "message": "Cannot ship order before payment"
-}
-```
-
----
-
-## 10. Testing Strategy
-
-### Unit Tests
-
-* WorkflowService transition validation
-* Role permission checks
-
-### Integration Tests
-
-* End-to-end order lifecycle
-* Invalid transition rejection
-
-### Manual Tests
-
-* UI button enable/disable
-* Admin vs user behavior
-
----
-
-## 11. Deployment & Configuration
-
-### Environment Variables
-
-```
-DB_URL
-DB_USERNAME
-DB_PASSWORD
-JWT_SECRET
-```
-
-### Deployment Flow
-
-1. Push code to GitHub
-2. Auto-deploy backend
-3. Auto-deploy frontend
-4. Public URL updated
-
----
-
-## 12. Logging & Monitoring
-
-* State transitions logged
-* Errors logged centrally
-* Audit logs used for demo & evaluation
-
----
-
-## 13. Technical Justification (Evaluation Ready)
-
-* Central workflow engine → correctness
-* State enum → deterministic logic
-* REST APIs → scalable integration
-* JWT security → industry standard
-* SQL DB → transactional consistency
-
----
-
-## 14. Final Technical Summary
-
-> This system implements a centralized workflow/state-machine engine to enforce deterministic order transitions, secure role-based actions, and maintain data consistency in a full-stack commerce application.
-
----
-
-
+*Technical Custodian: System Architects Team*
