@@ -35,51 +35,53 @@ const Login = () => {
     };
 
     return (
-        <div className="col-md-12">
-            <div className="card card-container p-4 mx-auto mt-5" style={{ maxWidth: "400px" }}>
-                <h3 className="text-center mb-4">Login</h3>
-                <form onSubmit={handleLogin}>
-                    <div className="form-group mb-3">
-                        <label htmlFor="username">Username</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group mb-3">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            name="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group d-grid mb-3">
-                        <button className="btn btn-primary btn-block" disabled={loading}>
-                            {loading && (
-                                <span className="spinner-border spinner-border-sm me-2"></span>
-                            )}
-                            <span>Login</span>
-                        </button>
-                    </div>
-
-                    {message && (
-                        <div className="form-group">
-                            <div className="alert alert-danger" role="alert">
-                                {message}
-                            </div>
+        <div className="container animate-fade-in py-5">
+            <div className="row justify-content-center">
+                <div className="col-md-5">
+                    <div className="glass-card p-5">
+                        <div className="text-center mb-5">
+                            <h2 className="fw-bold">Welcome Back</h2>
+                            <p className="text-muted">Sign in to your account to continue</p>
                         </div>
-                    )}
-                </form>
+                        <form onSubmit={handleLogin}>
+                            <div className="mb-3">
+                                <label className="form-label small text-uppercase fw-semibold">Username</label>
+                                <input
+                                    type="text"
+                                    className="form-control form-control-premium"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter your username"
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="form-label small text-uppercase fw-semibold">Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control form-control-premium"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    required
+                                />
+                            </div>
+
+                            <button className="btn btn-premium w-100 py-3 mb-3" disabled={loading}>
+                                {loading ? (
+                                    <span className="spinner-border spinner-border-sm"></span>
+                                ) : "Sign In"}
+                            </button>
+
+                            {message && (
+                                <div className="alert bg-danger-subtle text-danger border-0 rounded-3 small text-center" role="alert">
+                                    {message}
+                                </div>
+                            )}
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     );

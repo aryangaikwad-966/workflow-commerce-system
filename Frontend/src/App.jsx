@@ -9,11 +9,22 @@ import Register from "./pages/Register/Register";
 import CategoryDashboard from "./pages/Admin/CategoryDashboard";
 
 const Home = () => (
-  <div className="container mt-5">
-    <header className="jumbotron text-center">
-      <h3>Welcome to Workflow Commerce System</h3>
-      <p>Please login or register to manage your orders.</p>
-    </header>
+  <div className="container mt-5 py-5 animate-fade-in text-center">
+    <div className="row justify-content-center">
+      <div className="col-lg-8">
+        <h1 className="display-3 fw-bold mb-4" style={{ background: 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          Next-Gen Workflow Commerce
+        </h1>
+        <p className="lead text-muted mb-5 fs-4">
+          The only state-machine driven platform designed for precision,
+          scalability, and institutional-grade commerce operations.
+        </p>
+        <div className="d-flex justify-content-center gap-3">
+          <Link to="/register" className="btn btn-premium px-5 py-3">Explore Now</Link>
+          <Link to="/login" className="btn btn-outline-light px-5 py-3 rounded-3">Sign In</Link>
+        </div>
+      </div>
+    </div>
   </div>
 );
 

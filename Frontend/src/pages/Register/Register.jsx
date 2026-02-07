@@ -34,84 +34,82 @@ const Register = () => {
     };
 
     return (
-        <div className="col-md-12">
-            <div className="card card-container p-4 mx-auto mt-5" style={{ maxWidth: "400px" }}>
-                <h3 className="text-center mb-4">Register</h3>
-                <form onSubmit={handleRegister}>
-                    {!successful && (
-                        <div>
-                            <div className="form-group mb-3">
-                                <label htmlFor="username">Username</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    name="username"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    minLength={3}
-                                    maxLength={20}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group mb-3">
-                                <label htmlFor="email">Email</label>
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    name="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group mb-3">
-                                <label htmlFor="password">Password</label>
-                                <input
-                                    type="password"
-                                    className="form-control"
-                                    name="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    minLength={6}
-                                    maxLength={40}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group mb-3">
-                                <label htmlFor="role">Role</label>
-                                <select
-                                    className="form-control"
-                                    onChange={(e) => setRole([e.target.value])}
-                                >
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-
-                            <div className="form-group d-grid mb-3">
-                                <button className="btn btn-success btn-block">Sign Up</button>
-                            </div>
+        <div className="container animate-fade-in py-5">
+            <div className="row justify-content-center">
+                <div className="col-md-6">
+                    <div className="glass-card p-5">
+                        <div className="text-center mb-5">
+                            <h2 className="fw-bold">{successful ? "Success!" : "Join the Platform"}</h2>
+                            <p className="text-muted">Create your account to start managing workflows</p>
                         </div>
-                    )}
 
-                    {message && (
-                        <div className="form-group">
-                            <div
-                                className={
-                                    successful ? "alert alert-success" : "alert alert-danger"
-                                }
-                                role="alert"
-                            >
-                                {message}
-                            </div>
-                        </div>
-                    )}
-                </form>
-            </div >
-        </div >
+                        <form onSubmit={handleRegister}>
+                            {!successful && (
+                                <div className="animate-fade-in">
+                                    <div className="mb-3">
+                                        <label className="form-label small text-uppercase fw-semibold">Username</label>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-premium"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            minLength={3}
+                                            placeholder="ExampleUser"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label small text-uppercase fw-semibold">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-control form-control-premium"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="user@example.com"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-3">
+                                        <label className="form-label small text-uppercase fw-semibold">Password</label>
+                                        <input
+                                            type="password"
+                                            className="form-control form-control-premium"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            minLength={6}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="form-label small text-uppercase fw-semibold">Role</label>
+                                        <select
+                                            className="form-select form-control-premium"
+                                            onChange={(e) => setRole([e.target.value])}
+                                        >
+                                            <option value="user">Standard User</option>
+                                            <option value="admin">System Admin</option>
+                                        </select>
+                                    </div>
+
+                                    <button className="btn btn-premium w-100 py-3 mb-4">Create Account</button>
+                                </div>
+                            )}
+
+                            {message && (
+                                <div className={`alert ${successful ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} border-0 rounded-3 text-center p-3 animate-fade-in`} role="alert">
+                                    {message}
+                                    {successful && <div className="mt-3"><Link to="/login" className="btn btn-success btn-sm">Proceed to Login</Link></div>}
+                                </div>
+                            )}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

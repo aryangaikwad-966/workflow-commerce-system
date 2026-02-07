@@ -70,94 +70,106 @@ const CategoryDashboard = () => {
     };
 
     return (
-        <div className="container mt-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Category Management</h2>
-                <button className="btn btn-primary" onClick={() => handleOpenModal()}>Add New Category</button>
+        <div className="container mt-5 py-4 animate-fade-in">
+            <div className="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h2 className="fw-bold mb-1">Category Management</h2>
+                    <p className="text-muted small">Manage your product groups and their availability</p>
+                </div>
+                <button className="btn btn-premium d-flex align-items-center" onClick={() => handleOpenModal()}>
+                    <span className="me-2">+</span> Add Category
+                </button>
             </div>
 
             {categories.length === 0 ? (
-                <div className="alert alert-info">No categories found.</div>
+                <div className="glass-card p-5 text-center">
+                    <p className="lead">No categories have been established yet.</p>
+                </div>
             ) : (
-                <table className="table table-striped table-hover shadow-sm">
-                    <thead className="table-dark">
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {categories.map((cat) => (
-                            <tr key={cat.category_id}>
-                                <td>{cat.category_name}</td>
-                                <td>{cat.description}</td>
-                                <td>
-                                    <span className={`badge ${cat.status ? 'bg-success' : 'bg-danger'}`}>
-                                        {cat.status ? 'Active' : 'Inactive'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <button
-                                        className="btn btn-sm btn-outline-primary me-2"
-                                        onClick={() => handleOpenModal(cat)}
-                                        disabled={!cat.status}
-                                    >
-                                        Edit
-                                    </button>
-                                    {cat.status && (
-                                        <button
-                                            className="btn btn-sm btn-outline-danger"
-                                            onClick={() => handleDeactivate(cat.category_id)}
-                                        >
-                                            Deactivate
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="glass-card overflow-hidden shadow-lg border-0">
+                    <div className="table-responsive">
+                        <table className="table table-dark table-hover mb-0 align-middle">
+                            <thead className="bg-dark-subtle">
+                                <tr>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted">Category</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted">Description</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted">Availability</th>
+                                    <th className="px-4 py-3 text-uppercase small fw-bold text-muted text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="border-top-0">
+                                {categories.map((cat) => (
+                                    <tr key={cat.category_id} className="border-bottom border-light-subtle">
+                                        <td className="px-4 py-4 fw-medium">{cat.category_name}</td>
+                                        <td className="px-4 py-4 text-muted small">{cat.description || "—"}</td>
+                                        <td className="px-4 py-4">
+                                            <span className={`badge rounded-pill px-3 py-2 ${cat.status ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+                                                {cat.status ? '● Active' : '○ Inactive'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-4 text-end">
+                                            <button
+                                                className="btn btn-sm btn-outline-light border-0 me-2"
+                                                onClick={() => handleOpenModal(cat)}
+                                                disabled={!cat.status}
+                                            >
+                                                Edit
+                                            </button>
+                                            {cat.status && (
+                                                <button
+                                                    className="btn btn-sm btn-outline-danger border-0"
+                                                    onClick={() => handleDeactivate(cat.category_id)}
+                                                >
+                                                    Deactivate
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             )}
 
             {/* Modal for Create/Edit */}
             {showModal && (
-                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">{editMode ? 'Edit Category' : 'Create Category'}</h5>
-                                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+                <div className="modal show d-block animate-fade-in" tabIndex="-1" style={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="glass-card p-4 w-100 mx-3 border shadow-2xl">
+                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                <h4 className="fw-bold m-0">{editMode ? 'Edit Configuration' : 'New Category'}</h4>
+                                <button type="button" className="btn-close btn-close-white" onClick={handleCloseModal}></button>
                             </div>
                             <form onSubmit={handleSubmit}>
-                                <div className="modal-body">
-                                    {message && <div className="alert alert-danger">{message}</div>}
-                                    <div className="mb-3">
-                                        <label className="form-label">Category Name</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            name="category_name"
-                                            value={currentCategory.category_name}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="mb-3">
-                                        <label className="form-label">Description</label>
-                                        <textarea
-                                            className="form-control"
-                                            name="description"
-                                            value={currentCategory.description}
-                                            onChange={handleInputChange}
-                                            maxLength="300"
-                                        ></textarea>
-                                    </div>
+                                {message && <div className="alert bg-danger-subtle text-danger border-0 small mb-4">{message}</div>}
+                                <div className="mb-4">
+                                    <label className="form-label small text-uppercase fw-semibold text-muted">Display Name</label>
+                                    <input
+                                        type="text"
+                                        className="form-control form-control-premium text-white"
+                                        name="category_name"
+                                        value={currentCategory.category_name}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. Infrastructure"
+                                        required
+                                    />
                                 </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Cancel</button>
-                                    <button type="submit" className="btn btn-primary">{editMode ? 'Save Changes' : 'Create'}</button>
+                                <div className="mb-4">
+                                    <label className="form-label small text-uppercase fw-semibold text-muted">Summary Description</label>
+                                    <textarea
+                                        className="form-control form-control-premium text-white"
+                                        name="description"
+                                        rows="3"
+                                        value={currentCategory.description}
+                                        onChange={handleInputChange}
+                                        placeholder="Briefly describe this category scope..."
+                                        maxLength="300"
+                                    ></textarea>
+                                </div>
+                                <div className="d-flex gap-2">
+                                    <button type="submit" className="btn btn-premium flex-grow-1 py-2">{editMode ? 'Confirm Changes' : 'Initialize Category'}</button>
+                                    <button type="button" className="btn btn-outline-secondary px-4" onClick={handleCloseModal}>Abort</button>
                                 </div>
                             </form>
                         </div>
