@@ -104,15 +104,15 @@ const Register = () => {
                                     successful ? "alert alert-success" : "alert alert-danger"
                                 }
                                 role="alert"
-              ) >
-                            {message}
+                            >
+                                {message}
+                            </div>
                         </div>
-            </div>
-          )}
-        </form>
-      </div >
-    </div >
-  );
+                    )}
+                </form>
+            </div >
+        </div >
+    );
 };
 
 export default Register;
