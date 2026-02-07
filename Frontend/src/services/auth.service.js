@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/auth/";
+const API_URL = "https://workflow-commerce-backend.onrender.com/api/auth/"; // Replace with your actual Render backend URL
 
 const register = (username, email, password, roles) => {
   return axios.post(API_URL + "signup", {
