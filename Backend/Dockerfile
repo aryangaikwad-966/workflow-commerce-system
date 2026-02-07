@@ -9,7 +9,7 @@ RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
 # Run stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-focal
 WORKDIR /app
 COPY --from=build /app/target/workflow-commerce-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
