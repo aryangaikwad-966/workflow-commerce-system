@@ -1,54 +1,54 @@
--- ==========================================================
--- SQL Commands for Task 1: Foundation & Category Management
--- ==========================================================
-
--- 1. DATABASE SELECTION
-USE workflow_commerce;
-
--- 2. VERIFY ROLES & USERS
--- Check if default roles (USER, ADMIN) exist
-SELECT * FROM roles;
-
--- List all registered users
-SELECT id, username, email FROM users;
-
--- View user roles (Admin vs User assignments)
-SELECT u.username, r.name 
-FROM users u 
-JOIN user_roles ur ON u.id = ur.user_id 
-JOIN roles r ON ur.role_id = r.id;
-
--- 3. CATEGORY MANAGEMENT (CORE TASK)
--- List all categories with status information
-SELECT category_id, category_name, description, status FROM categories;
-
--- View only active categories
-SELECT * FROM categories WHERE status = 1;
-
--- View soft-deleted (inactive) categories
-SELECT * FROM categories WHERE status = 0;
-
--- 4. SAMPLE DATA (OPTIONAL)
--- Use these to manually seed categories if needed
-INSERT INTO categories (category_name, description, status, created_at, updated_at) 
-VALUES ('Electronics', 'Smartphones, Laptops, etc.', 1, NOW(), NOW());
-
-INSERT INTO categories (category_name, description, status, created_at, updated_at) 
-VALUES ('Fashion', 'Clothing and Accessories', 1, NOW(), NOW());
-
--- 5. PRODUCTS (To support category product count)
-CREATE TABLE IF NOT EXISTS products (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    category_id BIGINT,
-    created_at DATETIME,
-    updated_at DATETIME,
-    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+-- 1. CREATE TABLE categories
+drop database workflow_commerce;
+create database workflow_commerce;
+use workflow_commerce;
+CREATE TABLE categories (
+    category_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL UNIQUE,
+    description VARCHAR(300),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status BOOLEAN DEFAULT TRUE
 );
 
--- 6. TROUBLESHOOTING
--- Manually reset a user's password to 'admin123'
--- UPDATE users SET password = '$2a$10$7.P0O6i3O/iG8f.v0xM7yeA9U0S9kL0j000000000000000000000' WHERE username = 'admin';
+-- 2. INSERT sample category data
+INSERT INTO categories (category_name, description, status) 
+VALUES 
+('Electronics', 'High-end computing and consumer gadgets', 1),
+('Apparel', 'Traditional and modern professional wear', 1),
+('Logistics', 'Internal supply chain equipment', 0);
 
--- Manually reactivate a category
--- UPDATE categories SET status = 1 WHERE category_id = 1;
+-- 3. UPDATE category
+UPDATE categories 
+SET category_name = 'Computing Hardware', updated_at = NOW() 
+WHERE category_id = 1;
+
+-- 4. SOFT DELETE category (status = false)
+UPDATE categories 
+SET status = 0, updated_at = NOW() 
+WHERE category_id = 2;
+
+UPDATE users 
+SET password = '$2a$10$WbspULzqno53UEVNJDSy4ur3usqP8Owh1JQKQyy2uAACW5U3aYH/u' 
+WHERE username = 'admin';
+
+-- 5. SELECT active categories
+SELECT * FROM categories WHERE status = 1 ORDER BY category_name ASC;
+select * from users;
+
+-- 6. SELECT all categories (admin view)
+SELECT category_id, category_name, description, status, created_at FROM categories;
+
+USE workflow_commerce;
+
+-- 1. Remove the broken admin
+DELETE FROM user_roles WHERE user_id IN (SELECT id FROM users WHERE username = 'admin');
+DELETE FROM users WHERE username = 'admin';
+
+-- 2. Re-Insert Admin with known hash for 'admin123'
+INSERT INTO users (username, email, password, created_at)
+VALUES ('admin', 'admin@test.com', '$2a$10$WbspULzqno53UEVNJDSy4ur3usqP8Owh1JQKQyy2uAACW5U3aYH/u', NOW());
+
+-- 3. Assign Role (Crucial Step: Role ID 2 is ADMIN)
+INSERT INTO user_roles (user_id, role_id)
+VALUES ((SELECT id FROM users WHERE username = 'admin'), 2);

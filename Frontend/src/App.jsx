@@ -14,15 +14,14 @@ const Home = () => (
     <div className="row align-items-center">
       <div className="col-lg-6">
         <div className="badge bg-primary-light text-primary px-3 py-2 rounded-pill mb-4 small fw-bold">
-          TASK 1: CATEGORY MANAGEMENT READY
+          ENTERPRISE COMMERCE PLATFORM
         </div>
         <h1 className="display-4 fw-bold mb-4">
           Institutional Commerce <br />Management Console.
         </h1>
         <p className="lead text-secondary mb-5">
-          A high-performance platform designed for internal operations.
-          Manage product taxonomies, complex commerce workflows, and
-          catalog structures with institutional-grade precision.
+          A scalable B2B commerce platform with role-based access control,
+          state-machine driven workflows, and enterprise-grade catalog management.
         </p>
         <div className="d-flex gap-3">
           <Link to="/login" className="btn-primary-tech px-4 py-2 text-decoration-none shadow-sm">
@@ -59,7 +58,7 @@ const Home = () => (
 
 const Footer = () => (
   <footer className="container py-4 mt-5 border-top text-center">
-    <p className="text-secondary small mb-0">© 2026 Workflow Commerce Infrastructure. Senior Internship Task-1 Module.</p>
+    <p className="text-secondary small mb-0">© 2026 Workflow Commerce. Built with React, Spring Boot & MySQL.</p>
   </footer>
 );
 

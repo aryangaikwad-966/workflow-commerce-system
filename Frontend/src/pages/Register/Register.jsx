@@ -126,7 +126,7 @@ const Register = () => {
                         )}
                     </div>
                     <p className="text-center text-muted small mt-4">
-                        Secure Infrastructure Registration • Senior Project Task-1
+                        Secure Registration • JWT Authentication
                     </p>
                 </div>
             </div>

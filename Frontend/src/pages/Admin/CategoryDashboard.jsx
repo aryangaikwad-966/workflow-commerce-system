@@ -97,7 +97,7 @@ const CategoryDashboard = () => {
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 className="mb-1">Category Management</h2>
-                    <p className="text-secondary small mb-0">Internal operations dashboard for catalog taxonomy</p>
+                    <p className="text-secondary small mb-0">Centralized taxonomy management and catalog organization</p>
                 </div>
                 <button className="btn-primary-tech shadow-sm" onClick={() => handleOpenModal()}>
                     + Add Category
