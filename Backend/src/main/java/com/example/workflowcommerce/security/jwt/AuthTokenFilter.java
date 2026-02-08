@@ -33,6 +33,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
       String jwt = parseJwt(request);
       if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
+        logger.info("JWT VALID. Username from token: '{}'", username);
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         UsernamePasswordAuthenticationToken authentication =
@@ -41,11 +42,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 null,
                 userDetails.getAuthorities());
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        
+        logger.info("Setting Authentication. User: '{}', Authorities: '{}'", username, userDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
       }
     } catch (Exception e) {
-      logger.error("Cannot set user authentication: {}", e);
+      logger.error("Cannot set user authentication: {}", e.getMessage(), e);
     }
 
     filterChain.doFilter(request, response);

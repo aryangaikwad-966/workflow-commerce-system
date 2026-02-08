@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import AuthService from "../services/auth.service";
 
 const Navbar = () => {
     const [currentUser, setCurrentUser] = useState(undefined);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const user = AuthService.getCurrentUser();
         if (user) {
             setCurrentUser(user);
         }
-    }, []);
+    }, [location]);
 
     const logOut = () => {
         AuthService.logout();
@@ -20,55 +21,57 @@ const Navbar = () => {
         window.location.reload();
     };
 
+    const isAdmin = currentUser?.roles?.includes("ROLE_ADMIN");
+
     return (
-        <nav className="navbar navbar-expand-lg navbar-floating sticky-top">
-            <div className="container-fluid px-0">
-                <Link to={"/"} className="navbar-brand fw-bold d-flex align-items-center font-premium">
-                    <div className="bg-white text-dark rounded-pill me-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', fontSize: '18px' }}>
+        <nav className="navbar navbar-expand-lg navbar-white bg-white border-bottom sticky-top py-2">
+            <div className="container">
+                <Link to={"/"} className="navbar-brand fw-bold d-flex align-items-center">
+                    <div className="bg-primary text-white rounded-3 me-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', fontSize: '16px' }}>
                         W
                     </div>
-                    <span className="text-white fs-5">Workflow</span>
+                    <span className="text-dark font-premium" style={{ letterSpacing: '-0.01em' }}>Workflow</span>
                 </Link>
 
-                <button className="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <i className="bi bi-list"></i>
+                <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span className="navbar-toggler-icon"></span>
                 </button>
 
                 <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav ms-4 me-auto">
+                    <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item">
-                            <Link to={"/home"} className="nav-link nav-link-premium">Platform</Link>
+                            <Link to={"/home"} className={`nav-link-tech me-2 ${location.pathname === '/home' ? 'active' : ''}`}>
+                                Home
+                            </Link>
                         </li>
-                        {currentUser && currentUser.roles && currentUser.roles.includes("ROLE_ADMIN") && (
+                        {isAdmin && (
                             <li className="nav-item">
-                                <Link to={"/admin/categories"} className="nav-link nav-link-premium text-primary fw-semibold">
-                                    Console
+                                <Link to={"/admin/categories"} className={`nav-link-tech ${location.pathname === '/admin/categories' ? 'active' : ''}`}>
+                                    Category Management
                                 </Link>
                             </li>
                         )}
                     </ul>
 
-                    <div className="navbar-nav align-items-center gap-3">
+                    <div className="navbar-nav align-items-center">
                         {currentUser ? (
-                            <>
-                                <li className="nav-item d-none d-lg-block">
-                                    <span className="text-muted small">Signed in as <span className="text-white fw-medium">{currentUser.username}</span></span>
-                                </li>
-                                <li className="nav-item">
-                                    <button className="btn btn-secondary-premium border-0 py-2" onClick={logOut}>
-                                        Logout
-                                    </button>
-                                </li>
-                            </>
+                            <div className="d-flex align-items-center gap-3">
+                                <span className="text-secondary small fw-medium">
+                                    {currentUser.username} {isAdmin && <span className="badge bg-light text-primary border ms-1" style={{ fontSize: '10px' }}>ADMIN</span>}
+                                </span>
+                                <button className="btn-secondary-tech py-1 px-3 shadow-sm btn-sm" onClick={logOut}>
+                                    Logout
+                                </button>
+                            </div>
                         ) : (
-                            <>
-                                <li className="nav-item">
-                                    <Link to={"/login"} className="nav-link-premium">Sign In</Link>
-                                </li>
-                                <li className="nav-item">
-                                    <Link to={"/register"} className="btn-premium py-2">Get Started</Link>
-                                </li>
-                            </>
+                            <div className="d-flex align-items-center gap-2">
+                                <Link to={"/login"} className="nav-link-tech px-3">
+                                    Login
+                                </Link>
+                                <Link to={"/register"} className="btn-primary-tech py-1 px-3 shadow-sm btn-sm">
+                                    Register
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </div>

@@ -9,16 +9,19 @@ const Register = () => {
     const [role, setRole] = useState(["user"]);
     const [successful, setSuccessful] = useState(false);
     const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleRegister = (e) => {
         e.preventDefault();
         setMessage("");
         setSuccessful(false);
+        setLoading(true);
 
         AuthService.register(username, email, password, role).then(
             (response) => {
                 setMessage(response.data.message);
                 setSuccessful(true);
+                setLoading(false);
             },
             (error) => {
                 const resMessage =
@@ -30,95 +33,101 @@ const Register = () => {
 
                 setMessage(resMessage);
                 setSuccessful(false);
+                setLoading(false);
             }
         );
     };
 
     return (
-        <div className="container min-vh-100 d-flex align-items-center justify-content-center animate-slide-up py-5">
-            <div className="row w-100 justify-content-center">
+        <div className="container py-5 mt-4 animate-fade-in">
+            <div className="row justify-content-center">
                 <div className="col-md-6 col-lg-5">
-                    <div className="glass-card p-5">
-                        <div className="text-center mb-5">
-                            <h2 className="fw-bold font-premium">{successful ? "Success!" : "Identity Creation"}</h2>
-                            <p className="text-muted small">Establish your presence in the workflow system</p>
+                    <div className="admin-card p-4 p-md-5 shadow-lg border-0">
+                        <div className="text-center mb-4">
+                            <div className="bg-primary text-white rounded-3 mx-auto mb-3 d-flex align-items-center justify-content-center" style={{ width: '48px', height: '48px', fontSize: '24px' }}>
+                                W
+                            </div>
+                            <h2 className="fw-bold h4 mb-1">{successful ? "Registration Complete" : "Request System Access"}</h2>
+                            <p className="text-secondary small">Establish your credentials in the workflow infrastructure</p>
                         </div>
 
-                        <form onSubmit={handleRegister}>
-                            {!successful && (
-                                <div className="animate-slide-up">
-                                    <div className="mb-3">
-                                        <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Access ID (Username)</label>
-                                        <input
-                                            type="text"
-                                            className="form-control form-control-premium text-white"
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
-                                            minLength={3}
-                                            placeholder="Example: JohnDoe"
-                                            required
-                                        />
+                        {message && (
+                            <div className={`alert ${successful ? 'alert-success' : 'alert-danger'} border-0 py-2 px-3 small text-center mb-4`} role="alert">
+                                {message}
+                                {successful && (
+                                    <div className="mt-3">
+                                        <Link to="/login" className="btn-primary-tech py-2 px-4 shadow-sm text-decoration-none d-inline-block">Proceed to Login</Link>
                                     </div>
+                                )}
+                            </div>
+                        )}
 
-                                    <div className="mb-3">
-                                        <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Email Address</label>
-                                        <input
-                                            type="email"
-                                            className="form-control form-control-premium text-white"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="john@example.com"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="mb-3">
-                                        <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Security Key (Password)</label>
-                                        <input
-                                            type="password"
-                                            className="form-control form-control-premium text-white"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            minLength={6}
-                                            placeholder="••••••••"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="mb-4">
-                                        <label className="form-label small text-uppercase fw-bold text-muted" style={{ fontSize: '10px', letterSpacing: '0.05em' }}>Selection Role</label>
-                                        <select
-                                            className="form-select form-control-premium text-white"
-                                            onChange={(e) => setRole([e.target.value])}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <option value="user">Standard Agent</option>
-                                            <option value="admin">System Architect (Admin)</option>
-                                        </select>
-                                    </div>
-
-                                    <button className="btn-premium w-100 py-3 mb-4">Initialize Provisioning</button>
+                        {!successful && (
+                            <form onSubmit={handleRegister}>
+                                <div className="mb-3">
+                                    <label className="form-label small fw-semibold text-secondary">Username</label>
+                                    <input
+                                        type="text"
+                                        className="form-input-tech"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        minLength={3}
+                                        placeholder="Pick a unique identifier"
+                                        required
+                                    />
                                 </div>
-                            )}
 
-                            {message && (
-                                <div className={`alert ${successful ? 'bg-success bg-opacity-10 text-success' : 'bg-danger bg-opacity-10 text-danger'} border-0 rounded-3 text-center p-3 animate-slide-up`} role="alert">
-                                    {message}
-                                    {successful && (
-                                        <div className="mt-3">
-                                            <Link to="/login" className="btn-premium py-2 text-decoration-none">Proceed to Terminal</Link>
-                                        </div>
-                                    )}
+                                <div className="mb-3">
+                                    <label className="form-label small fw-semibold text-secondary">Email Address</label>
+                                    <input
+                                        type="email"
+                                        className="form-input-tech"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="user@organization.com"
+                                        required
+                                    />
                                 </div>
-                            )}
 
-                            {!successful && (
-                                <p className="text-center text-muted small mt-2">
-                                    Already registered? <Link to="/login" className="text-white text-decoration-none fw-medium">Sign in here</Link>
+                                <div className="mb-3">
+                                    <label className="form-label small fw-semibold text-secondary">Password</label>
+                                    <input
+                                        type="password"
+                                        className="form-input-tech"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        minLength={6}
+                                        placeholder="Min. 6 characters"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="form-label small fw-semibold text-secondary">Assigned Role</label>
+                                    <select
+                                        className="form-input-tech"
+                                        onChange={(e) => setRole([e.target.value])}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <option value="user">Standard User</option>
+                                        <option value="admin">System Administrator</option>
+                                    </select>
+                                </div>
+
+                                <button className="btn-primary-tech w-100 py-2 mb-4 d-flex align-items-center justify-content-center gap-2" disabled={loading}>
+                                    {loading && <span className="spinner-border spinner-border-sm"></span>}
+                                    {loading ? "Registering..." : "Provision Account"}
+                                </button>
+
+                                <p className="text-center text-secondary small mb-0">
+                                    Already have an account? <Link to="/login" className="text-primary text-decoration-none fw-medium">Sign in</Link>
                                 </p>
-                            )}
-                        </form>
+                            </form>
+                        )}
                     </div>
+                    <p className="text-center text-muted small mt-4">
+                        Secure Infrastructure Registration • Senior Project Task-1
+                    </p>
                 </div>
             </div>
         </div>

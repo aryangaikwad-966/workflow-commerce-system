@@ -38,6 +38,9 @@ public class Category {
 
     private boolean status = true; // true = active, false = inactive (soft delete)
 
+    @Transient
+    private long productCount;
+
     public Category(String category_name, String description) {
         this.category_name = category_name;
         this.description = description;

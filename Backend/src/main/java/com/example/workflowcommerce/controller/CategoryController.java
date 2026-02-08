@@ -19,13 +19,21 @@ public class CategoryController {
     @Autowired
     CategoryRepository categoryRepository;
 
+    @Autowired
+    com.example.workflowcommerce.repository.ProductRepository productRepository;
+
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findAll();
+        categories.forEach(category -> {
+            category.setProductCount(productRepository.countByCategoryId(category.getCategory_id()));
+        });
+        return categories;
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> createCategory(@Valid @RequestBody Category category) {
         if (categoryRepository.existsByCategory_name(category.getCategory_name())) {
             return ResponseEntity.badRequest().body(new MessageResponse("TAXO_001: Category identity already established in system infrastructure."));
@@ -36,7 +44,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody Category categoryRequest) {
         return categoryRepository.findById(id).map(category -> {
             category.setCategory_name(categoryRequest.getCategory_name());
@@ -47,7 +55,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> deactivateCategory(@PathVariable Long id) {
         return categoryRepository.findById(id).map(category -> {
             category.setStatus(false); // Determinstic Soft-Delete logic

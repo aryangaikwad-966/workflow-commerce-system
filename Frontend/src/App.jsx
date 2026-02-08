@@ -7,36 +7,65 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import CategoryDashboard from "./pages/Admin/CategoryDashboard";
+import AuthService from "./services/auth.service";
 
 const Home = () => (
-  <div className="container min-vh-100 d-flex flex-column justify-content-center align-items-center text-center animate-slide-up">
-    <div className="badge border border-primary text-primary px-3 py-2 rounded-pill mb-4 small fw-bold">
-      AVAILABLE NOW: TASK 1 MODULE COMPLETE
-    </div>
-    <h1 className="display-2 fw-bold mb-4 font-premium" style={{ letterSpacing: '-0.02em', background: 'linear-gradient(to bottom, #fff 40%, #94a3b8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-      Workflow-Driven<br />Commerce Infrastructure.
-    </h1>
-    <p className="lead text-muted mb-5 max-w-2xl mx-auto fs-5" style={{ maxWidth: '600px' }}>
-      A state-of-the-art platform for managing complex ecommerce workflows
-      with institutional-grade precision and real-time state tracking.
-    </p>
-    <div className="d-flex gap-3">
-      <Link to="/register" className="btn-premium px-5 py-3 shadow-lg">Get Started</Link>
-      <Link to="/login" className="btn-secondary-premium px-5 py-3">Sign In</Link>
+  <div className="container py-5 mt-5">
+    <div className="row align-items-center">
+      <div className="col-lg-6">
+        <div className="badge bg-primary-light text-primary px-3 py-2 rounded-pill mb-4 small fw-bold">
+          TASK 1: CATEGORY MANAGEMENT READY
+        </div>
+        <h1 className="display-4 fw-bold mb-4">
+          Institutional Commerce <br />Management Console.
+        </h1>
+        <p className="lead text-secondary mb-5">
+          A high-performance platform designed for internal operations.
+          Manage product taxonomies, complex commerce workflows, and
+          catalog structures with institutional-grade precision.
+        </p>
+        <div className="d-flex gap-3">
+          <Link to="/login" className="btn-primary-tech px-4 py-2 text-decoration-none shadow-sm">
+            Launch Console
+          </Link>
+          <Link to="/register" className="btn-secondary-tech px-4 py-2 text-decoration-none">
+            Register Account
+          </Link>
+        </div>
+      </div>
+      <div className="col-lg-6 d-none d-lg-block">
+        <div className="admin-card p-5 bg-light border-0 shadow-sm text-center">
+          <h4 className="text-secondary mb-3">Workflow Engine v1.0</h4>
+          <p className="text-muted small">Systems Operational • State Machine Ready</p>
+          <div className="d-flex justify-content-center gap-2 mt-4">
+            <div className="bg-white p-3 rounded shadow-sm" style={{ width: '80px' }}>
+              <div className="small text-muted mb-1">State</div>
+              <div className="fw-bold text-success small">ACTIVE</div>
+            </div>
+            <div className="bg-white p-3 rounded shadow-sm" style={{ width: '80px' }}>
+              <div className="small text-muted mb-1">Queue</div>
+              <div className="fw-bold text-primary small">0.0ms</div>
+            </div>
+            <div className="bg-white p-3 rounded shadow-sm" style={{ width: '80px' }}>
+              <div className="small text-muted mb-1">Logs</div>
+              <div className="fw-bold text-secondary small">READY</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 );
 
 const Footer = () => (
-  <footer className="container py-5 mt-5 border-top border-secondary border-opacity-10 text-center">
-    <p className="text-muted small mb-0">© 2026 Workflow Commerce. Engineered for high-performance commerce.</p>
+  <footer className="container py-4 mt-5 border-top text-center">
+    <p className="text-secondary small mb-0">© 2026 Workflow Commerce Infrastructure. Senior Internship Task-1 Module.</p>
   </footer>
 );
 
 function App() {
   return (
     <div>
-      <div className="bg-mesh"></div>
       <Navbar />
 
       <div className="container">
@@ -45,7 +74,22 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/admin/categories" element={<CategoryDashboard />} />
+          <Route
+            path="/admin/categories"
+            element={
+              AuthService.getCurrentUser()?.roles?.includes("ROLE_ADMIN") ? (
+                <CategoryDashboard />
+              ) : (
+                <div className="container py-5 text-center">
+                  <div className="admin-card p-5 d-inline-block shadow-sm">
+                    <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
+                    <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
+                    <Link to="/home" className="btn-primary-tech px-4 py-2 text-decoration-none">Return Home</Link>
+                  </div>
+                </div>
+              )
+            }
+          />
         </Routes>
       </div>
       <Footer />

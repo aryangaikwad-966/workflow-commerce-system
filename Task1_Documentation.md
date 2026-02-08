@@ -13,7 +13,7 @@ To access category management, you must log in with an **ADMIN** account.
 
 ### 2.2 Category Dashboard
 The Category Dashboard provides a comprehensive view of all categories in the system.
-- **View Categories:** See the name, description, and current status (Active/Inactive) of all categories.
+- **View Categories:** See the name, description, product count (inventory), and current status (Active/Inactive) of all categories.
 - **Search/Browse:** Categories are listed in a clear, responsive table format.
 
 ### 2.3 Create a New Category
@@ -32,7 +32,7 @@ The Category Dashboard provides a comprehensive view of all categories in the sy
 ### 2.5 Deactivate Category (Soft Delete)
 The system uses a soft delete policy. Categories are never permanently removed from the database but are marked as **Inactive**.
 1. Click the **"Deactivate"** button next to an active category.
-2. **Warning Message:** A confirmation dialog will appear: *"Please assign products to another category before deactivating. Are you sure?"*
+2. **Warning Message:** A confirmation dialog will appear: *"Please assign products to another category before deactivating."*
 3. Click **OK** to confirm.
 4. The category status will change to **Inactive**, and it will be disabled for future product assignments.
 

@@ -16,7 +16,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 
 @Configuration
 @EnableMethodSecurity
@@ -30,6 +32,13 @@ public class WebSecurityConfig {
   @Bean
   public AuthTokenFilter authenticationJwtTokenFilter() {
     return new AuthTokenFilter();
+  }
+
+  @Bean
+  public FilterRegistrationBean<AuthTokenFilter> registration(AuthTokenFilter filter) {
+      FilterRegistrationBean<AuthTokenFilter> registration = new FilterRegistrationBean<>(filter);
+      registration.setEnabled(false);
+      return registration;
   }
 
   @Bean
@@ -58,9 +67,13 @@ public class WebSecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .securityContext(securityContext -> securityContext
+            .securityContextRepository(new org.springframework.security.web.context.RequestAttributeSecurityContextRepository())
+        )
         .authorizeHttpRequests(auth -> 
           auth.requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/test/**").permitAll()
+              .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
               .anyRequest().authenticated()
         );
     
@@ -74,11 +87,12 @@ public class WebSecurityConfig {
   @Bean
   public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-    configuration.setAllowedOrigins(java.util.Arrays.asList("https://workflow-commerce-system.vercel.app", "http://localhost:5173"));
+    // 100% Fix: Permissive CORS for Localhost Development
+    configuration.setAllowedOriginPatterns(java.util.Arrays.asList("*")); // Use allowedOriginPatterns instead of allowedOrigins
     configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-    configuration.setAllowedHeaders(java.util.Arrays.asList("authorization", "content-type", "x-auth-token"));
-    configuration.setExposedHeaders(java.util.Arrays.asList("x-auth-token"));
+    configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
     configuration.setAllowCredentials(true);
+    
     org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
