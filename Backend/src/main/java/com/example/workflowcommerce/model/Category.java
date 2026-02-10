@@ -3,8 +3,6 @@ package com.example.workflowcommerce.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,9 +12,17 @@ import java.time.LocalDateTime;
 @Table(name = "categories", uniqueConstraints = {
     @UniqueConstraint(columnNames = "category_name")
 })
-@Data
-@NoArgsConstructor
 public class Category {
+    public Category() {}
+    public Long getCategory_id() { return this.category_id; }
+    public String getCategory_name() { return this.category_name; }
+    public void setCategory_name(String category_name) { this.category_name = category_name; }
+    public String getDescription() { return this.description; }
+    public void setDescription(String description) { this.description = description; }
+    public boolean getStatus() { return this.status; }
+    public void setStatus(boolean status) { this.status = status; }
+    public long getProductCount() { return this.productCount; }
+    public void setProductCount(long productCount) { this.productCount = productCount; }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long category_id;

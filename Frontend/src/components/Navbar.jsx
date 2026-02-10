@@ -44,12 +44,24 @@ const Navbar = () => {
                                 Home
                             </Link>
                         </li>
+                        <li className="nav-item">
+                            <Link to={"/products"} className={`nav-link-tech me-2 ${location.pathname === '/products' ? 'active' : ''}`}>
+                                Product Catalog
+                            </Link>
+                        </li>
                         {isAdmin && (
-                            <li className="nav-item">
-                                <Link to={"/admin/categories"} className={`nav-link-tech ${location.pathname === '/admin/categories' ? 'active' : ''}`}>
-                                    Category Management
-                                </Link>
-                            </li>
+                            <>
+                                <li className="nav-item">
+                                    <Link to={"/admin/categories"} className={`nav-link-tech ${location.pathname === '/admin/categories' ? 'active' : ''}`}>
+                                        Category Management
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to={"/admin/products"} className={`nav-link-tech ${location.pathname === '/admin/products' ? 'active' : ''}`}>
+                                        Product Management
+                                    </Link>
+                                </li>
+                            </>
                         )}
                     </ul>
 

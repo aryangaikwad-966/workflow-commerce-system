@@ -10,6 +10,10 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    @Query("SELECT COUNT(p) FROM Product p WHERE p.category.category_id = :categoryId")
-    long countByCategoryId(@Param("categoryId") Long categoryId);
+    @Query("SELECT p.category.category_id, COUNT(p) FROM Product p WHERE p.status = true GROUP BY p.category.category_id")
+    List<Object[]> countActiveByCategory();
+
+    boolean existsBySku(String sku);
+
+    List<Product> findByStatusTrue();
 }

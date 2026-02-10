@@ -6,7 +6,6 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState(["user"]);
     const [successful, setSuccessful] = useState(false);
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -17,7 +16,7 @@ const Register = () => {
         setSuccessful(false);
         setLoading(true);
 
-        AuthService.register(username, email, password, role).then(
+        AuthService.register(username, email, password, ["user"]).then(
             (response) => {
                 setMessage(response.data.message);
                 setSuccessful(true);
@@ -100,18 +99,6 @@ const Register = () => {
                                         placeholder="Min. 6 characters"
                                         required
                                     />
-                                </div>
-
-                                <div className="mb-4">
-                                    <label className="form-label small fw-semibold text-secondary">Assigned Role</label>
-                                    <select
-                                        className="form-input-tech"
-                                        onChange={(e) => setRole([e.target.value])}
-                                        style={{ cursor: 'pointer' }}
-                                    >
-                                        <option value="user">Standard User</option>
-                                        <option value="admin">System Administrator</option>
-                                    </select>
                                 </div>
 
                                 <button className="btn-primary-tech w-100 py-2 mb-4 d-flex align-items-center justify-content-center gap-2" disabled={loading}>

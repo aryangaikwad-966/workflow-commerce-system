@@ -1,9 +1,12 @@
 package com.example.workflowcommerce.security;
 
-import com.example.workflowcommerce.security.jwt.AuthEntryPointJwt;
-import com.example.workflowcommerce.security.jwt.AuthTokenFilter;
-import com.example.workflowcommerce.security.services.UserDetailsServiceImpl;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,13 +19,17 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+
+import com.example.workflowcommerce.security.jwt.AuthEntryPointJwt;
+import com.example.workflowcommerce.security.jwt.AuthTokenFilter;
+import com.example.workflowcommerce.security.services.UserDetailsServiceImpl;
 
 @Configuration
 @EnableMethodSecurity
 public class WebSecurityConfig {
+  @Value("${workflow.app.allowedOrigins}")
+  private String allowedOrigins;
   @Autowired
   UserDetailsServiceImpl userDetailsService;
 
@@ -72,6 +79,8 @@ public class WebSecurityConfig {
         )
         .authorizeHttpRequests(auth -> 
           auth.requestMatchers("/api/auth/**").permitAll()
+              .requestMatchers("/api/products/public").permitAll()
+              .requestMatchers("/api/categories/public").permitAll()
               .requestMatchers("/api/test/**").permitAll()
               .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
               .anyRequest().authenticated()
@@ -87,8 +96,11 @@ public class WebSecurityConfig {
   @Bean
   public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
     org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
-    // 100% Fix: Permissive CORS for Localhost Development
-    configuration.setAllowedOriginPatterns(java.util.Arrays.asList("*")); // Use allowedOriginPatterns instead of allowedOrigins
+    List<String> origins = Arrays.stream(allowedOrigins.split(","))
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .collect(Collectors.toList());
+    configuration.setAllowedOrigins(origins);
     configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
     configuration.setAllowCredentials(true);

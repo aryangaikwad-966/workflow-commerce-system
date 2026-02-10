@@ -1,15 +1,27 @@
 package com.example.workflowcommerce.controller;
 
-import com.example.workflowcommerce.model.Category;
-import com.example.workflowcommerce.payload.response.MessageResponse;
-import com.example.workflowcommerce.repository.CategoryRepository;
-import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.example.workflowcommerce.model.Category;
+import com.example.workflowcommerce.payload.response.MessageResponse;
+import com.example.workflowcommerce.repository.CategoryRepository;
+
+import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -25,11 +37,18 @@ public class CategoryController {
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<Category> getAllCategories() {
-        List<Category> categories = categoryRepository.findAll();
+        List<Category> categories = categoryRepository.findByStatusTrue();
+        Map<Long, Long> counts = productRepository.countActiveByCategory().stream()
+            .collect(Collectors.toMap(row -> (Long) row[0], row -> (Long) row[1]));
         categories.forEach(category -> {
-            category.setProductCount(productRepository.countByCategoryId(category.getCategory_id()));
+            category.setProductCount(counts.getOrDefault(category.getCategory_id(), 0L));
         });
         return categories;
+    }
+
+    @GetMapping("/public")
+    public List<Category> getPublicCategories() {
+        return categoryRepository.findByStatusTrue();
     }
 
     @PostMapping
@@ -47,6 +66,10 @@ public class CategoryController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<?> updateCategory(@PathVariable Long id, @Valid @RequestBody Category categoryRequest) {
         return categoryRepository.findById(id).map(category -> {
+            if (!category.getCategory_name().equals(categoryRequest.getCategory_name())
+                && categoryRepository.existsByCategory_name(categoryRequest.getCategory_name())) {
+                return ResponseEntity.badRequest().body(new MessageResponse("TAXO_001: Category identity already established in system infrastructure."));
+            }
             category.setCategory_name(categoryRequest.getCategory_name());
             category.setDescription(categoryRequest.getDescription());
             categoryRepository.save(category);

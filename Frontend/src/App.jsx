@@ -8,6 +8,8 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import CategoryDashboard from "./pages/Admin/CategoryDashboard";
 import AuthService from "./services/auth.service";
+import ProductDashboard from "./pages/Admin/ProductDashboard";
+import ProductCatalog from "./pages/Customer/ProductCatalog";
 
 const Home = () => (
   <div className="container py-5 mt-5">
@@ -23,12 +25,15 @@ const Home = () => (
           A scalable B2B commerce platform with role-based access control,
           state-machine driven workflows, and enterprise-grade catalog management.
         </p>
-        <div className="d-flex gap-3">
+        <div className="d-flex gap-3 flex-wrap">
           <Link to="/login" className="btn-primary-tech px-4 py-2 text-decoration-none shadow-sm">
             Launch Console
           </Link>
           <Link to="/register" className="btn-secondary-tech px-4 py-2 text-decoration-none">
             Register Account
+          </Link>
+          <Link to="/products" className="btn-outline-tech px-4 py-2 text-decoration-none">
+            Browse Products
           </Link>
         </div>
       </div>
@@ -66,18 +71,34 @@ function App() {
   return (
     <div>
       <Navbar />
-
       <div className="container">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/products" element={<ProductCatalog />} />
           <Route
             path="/admin/categories"
             element={
               AuthService.getCurrentUser()?.roles?.includes("ROLE_ADMIN") ? (
                 <CategoryDashboard />
+              ) : (
+                <div className="container py-5 text-center">
+                  <div className="admin-card p-5 d-inline-block shadow-sm">
+                    <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
+                    <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
+                    <Link to="/home" className="btn-primary-tech px-4 py-2 text-decoration-none">Return Home</Link>
+                  </div>
+                </div>
+              )
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              AuthService.getCurrentUser()?.roles?.includes("ROLE_ADMIN") ? (
+                <ProductDashboard />
               ) : (
                 <div className="container py-5 text-center">
                   <div className="admin-card p-5 d-inline-block shadow-sm">
