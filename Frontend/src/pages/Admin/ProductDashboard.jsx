@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import categoryService from "../../services/category.service";
 import productService from "../../services/product.service";
 import authService from "../../services/auth.service";
+import { useNavigate } from "react-router-dom";
 
 const ProductDashboard = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [user, setUser] = useState(null);
     const [form, setForm] = useState({
         productName: "",
         description: "",
@@ -16,14 +18,53 @@ const ProductDashboard = () => {
     });
     const [editingId, setEditingId] = useState(null);
     const [message, setMessage] = useState("");
+    const navigate = useNavigate();
+    const [hasFetched, setHasFetched] = useState(false);
 
+    // Check if user is authenticated as admin
     useEffect(() => {
-        fetchProducts();
-        fetchCategories();
+        const currentUser = authService.getCurrentUser();
+        setUser(currentUser);
     }, []);
 
+    useEffect(() => {
+        if (hasFetched || !user?.id || !user?.token) return;
+
+        if (user.roles?.includes("ROLE_ADMIN")) {
+            setHasFetched(true);
+            fetchProducts();
+            fetchCategories();
+        }
+    }, [user?.id, hasFetched]);
+
+    // Early return after all hooks
+    if (!user || !user.roles?.includes("ROLE_ADMIN")) {
+        return (
+            <div className="container py-5 text-center">
+                <div className="admin-card p-5 d-inline-block shadow-sm">
+                    <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
+                    <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
+                    <button
+                        className="btn-primary-tech px-4 py-2"
+                        onClick={() => navigate("/home")}
+                    >
+                        Return Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     const fetchProducts = async () => {
+        if (loading) {
+            console.log('ProductDashboard: fetchProducts called while loading, skipping');
+            return;
+        }
+
+        console.log('ProductDashboard: fetchProducts called');
+
         try {
+            setLoading(true);
             const res = await productService.getAll();
             // Defensive: ensure products is always an array
             if (Array.isArray(res.data)) {
@@ -33,18 +74,31 @@ const ProductDashboard = () => {
             } else {
                 setProducts([]);
             }
+            console.log('ProductDashboard: fetchProducts completed successfully');
         } catch (err) {
             setProducts([]);
             setMessage("Failed to load products");
+            console.error('ProductDashboard: fetchProducts error', err);
+        } finally {
+            setLoading(false);
         }
     };
 
     const fetchCategories = async () => {
+        if (loading) {
+            console.log('ProductDashboard: fetchCategories called while loading, skipping');
+            return;
+        }
+
+        console.log('ProductDashboard: fetchCategories called');
+
         try {
             const res = await categoryService.getAllCategories();
             setCategories(res.data);
+            console.log('ProductDashboard: fetchCategories completed successfully');
         } catch (err) {
             setMessage("Failed to load categories");
+            console.error('ProductDashboard: fetchCategories error', err);
         }
     };
 

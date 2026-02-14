@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import publicCategoryService from "../../services/publicCategory.service";
 import publicProductService from "../../services/publicProduct.service";
+import { useCart } from "../../contexts/CartContext";
 
 const ProductCatalog = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [loading, setLoading] = useState(true);
+    const { addToCart, getCartCount } = useCart();
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchCategories();
@@ -36,6 +40,7 @@ const ProductCatalog = () => {
             setLoading(false);
         }
     };
+
 
     const filteredProducts = selectedCategory === "all"
         ? products
@@ -124,13 +129,28 @@ const ProductCatalog = () => {
                                             <p className="card-text">
                                                 {product.description || "No description available"}
                                             </p>
-                                            <div className="d-flex justify-content-between align-items-center">
+                                            <div className="d-flex justify-content-between align-items-center mb-3">
                                                 <span className="h5 text-primary mb-0">
                                                     ${product.price}
                                                 </span>
                                                 <span className={`badge ${product.inventoryCount > 10 ? 'bg-success' : product.inventoryCount > 0 ? 'bg-warning' : 'bg-danger'}`}>
                                                     {product.inventoryCount > 0 ? `In Stock (${product.inventoryCount})` : 'Out of Stock'}
                                                 </span>
+                                            </div>
+                                            <div className="d-flex gap-2">
+                                                <button
+                                                    className="btn-primary-tech btn-sm flex-fill"
+                                                    onClick={() => addToCart(product)}
+                                                    disabled={product.inventoryCount === 0}
+                                                >
+                                                    Add to Cart
+                                                </button>
+                                                <button
+                                                    className="btn-outline-tech btn-sm"
+                                                    onClick={() => navigate('/cart')}
+                                                >
+                                                    View Cart ({getCartCount()})
+                                                </button>
                                             </div>
                                         </div>
                                         <div className="card-footer bg-light">

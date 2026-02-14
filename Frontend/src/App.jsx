@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
@@ -10,6 +10,38 @@ import CategoryDashboard from "./pages/Admin/CategoryDashboard";
 import AuthService from "./services/auth.service";
 import ProductDashboard from "./pages/Admin/ProductDashboard";
 import ProductCatalog from "./pages/Customer/ProductCatalog";
+import Cart from "./pages/Customer/Cart";
+import MyOrders from "./pages/Customer/MyOrders";
+import OrderDashboard from "./pages/Admin/OrderDashboard";
+import { CartProvider } from "./contexts/CartContext";
+
+// Admin Route Guard Component
+const AdminRoute = ({ children }) => {
+  const [isAdmin, setIsAdmin] = useState(null);
+
+  useEffect(() => {
+    const user = AuthService.getCurrentUser();
+    setIsAdmin(user?.roles?.includes("ROLE_ADMIN") || false);
+  }, []);
+
+  if (isAdmin === null) {
+    return <div className="container py-5 text-center">Loading...</div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="admin-card p-5 d-inline-block shadow-sm">
+          <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
+          <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
+          <Link to="/home" className="btn-primary-tech px-4 py-2 text-decoration-none">Return Home</Link>
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+};
 
 const Home = () => (
   <div className="container py-5 mt-5">
@@ -69,51 +101,47 @@ const Footer = () => (
 
 function App() {
   return (
-    <div>
-      <Navbar />
-      <div className="container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/products" element={<ProductCatalog />} />
-          <Route
-            path="/admin/categories"
-            element={
-              AuthService.getCurrentUser()?.roles?.includes("ROLE_ADMIN") ? (
-                <CategoryDashboard />
-              ) : (
-                <div className="container py-5 text-center">
-                  <div className="admin-card p-5 d-inline-block shadow-sm">
-                    <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
-                    <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
-                    <Link to="/home" className="btn-primary-tech px-4 py-2 text-decoration-none">Return Home</Link>
-                  </div>
-                </div>
-              )
-            }
-          />
-          <Route
-            path="/admin/products"
-            element={
-              AuthService.getCurrentUser()?.roles?.includes("ROLE_ADMIN") ? (
-                <ProductDashboard />
-              ) : (
-                <div className="container py-5 text-center">
-                  <div className="admin-card p-5 d-inline-block shadow-sm">
-                    <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
-                    <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
-                    <Link to="/home" className="btn-primary-tech px-4 py-2 text-decoration-none">Return Home</Link>
-                  </div>
-                </div>
-              )
-            }
-          />
-        </Routes>
+    <CartProvider>
+      <div>
+        <Navbar />
+        <div className="container">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/products" element={<ProductCatalog />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/orders" element={<MyOrders />} />
+            <Route
+              path="/admin/categories"
+              element={
+                <AdminRoute>
+                  <CategoryDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products"
+              element={
+                <AdminRoute>
+                  <ProductDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <AdminRoute>
+                  <OrderDashboard />
+                </AdminRoute>
+              }
+            />
+          </Routes>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </CartProvider>
   );
 }
 

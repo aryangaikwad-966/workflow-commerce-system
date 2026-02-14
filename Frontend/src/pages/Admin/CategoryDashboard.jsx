@@ -1,25 +1,49 @@
 import React, { useState, useEffect } from "react";
 import CategoryService from "../../services/category.service";
+import AuthService from "../../services/auth.service";
+import { useNavigate } from "react-router-dom";
 
 const CategoryDashboard = () => {
     const [categories, setCategories] = useState([]);
+    const [user, setUser] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentCategory, setCurrentCategory] = useState({ category_id: null, category_name: "", description: "" });
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const [hasFetched, setHasFetched] = useState(false);
 
+    // Check if user is authenticated as admin
     useEffect(() => {
-        loadCategories();
+        const currentUser = AuthService.getCurrentUser();
+        setUser(currentUser);
     }, []);
 
+    useEffect(() => {
+        if (hasFetched || !user?.id || !user?.token) return;
+
+        if (user.roles?.includes("ROLE_ADMIN")) {
+            setHasFetched(true);
+            loadCategories();
+        }
+    }, [user?.id, hasFetched]);
+
     const loadCategories = () => {
+        if (loading) {
+            console.log('CategoryDashboard: loadCategories called while loading, skipping');
+            return;
+        }
+
+        console.log('CategoryDashboard: loadCategories called');
+
         setLoading(true);
         CategoryService.getAllCategories().then(
             (response) => {
                 setCategories(response.data);
                 setLoading(false);
+                console.log('CategoryDashboard: loadCategories completed successfully');
             },
             (err) => {
                 console.error("Error fetching categories", err);
@@ -92,6 +116,24 @@ const CategoryDashboard = () => {
         }
     };
 
+    // Early return after all hooks
+    if (!user || !user.roles?.includes("ROLE_ADMIN")) {
+        return (
+            <div className="container py-5 text-center">
+                <div className="admin-card p-5 d-inline-block shadow-sm">
+                    <h2 className="text-danger fw-bold mb-3">Access Denied</h2>
+                    <p className="text-secondary mb-4">You do not have the required administrative permissions to access this console.</p>
+                    <button
+                        className="btn-primary-tech px-4 py-2"
+                        onClick={() => navigate("/home")}
+                    >
+                        Return Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="py-4 animate-fade-in">
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -162,19 +204,11 @@ const CategoryDashboard = () => {
                                             </span>
                                         </td>
                                         <td className="text-end">
-                                            <div className="d-flex justify-content-end gap-2">
-                                                <button
-                                                    className="btn btn-secondary-tech btn-sm py-1"
-                                                    onClick={() => handleOpenModal(cat)}
-                                                    disabled={!cat.status}
-                                                >
+                                            <div className="btn-group btn-group-sm">
+                                                <button className="btn btn-outline-primary btn-sm" onClick={() => handleOpenModal(cat)}>
                                                     Edit
                                                 </button>
-                                                <button
-                                                    className="btn btn-danger-tech btn-sm py-1"
-                                                    onClick={() => handleDeactivate(cat.category_id)}
-                                                    disabled={!cat.status}
-                                                >
+                                                <button className="btn btn-outline-danger btn-sm" onClick={() => handleDeactivate(cat.category_id)}>
                                                     Deactivate
                                                 </button>
                                             </div>
@@ -187,49 +221,50 @@ const CategoryDashboard = () => {
                 </div>
             </div>
 
-            {/* Modal for Create/Edit */}
+            {/* Modal */}
             {showModal && (
-                <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(4px)' }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content border-0 shadow-lg">
-                            <div className="modal-header border-bottom-0 pt-4 px-4">
-                                <h5 className="modal-title fw-bold">{editMode ? 'Update Category' : 'Add New Category'}</h5>
+                <div className="modal show d-block" tabIndex="-1">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">{editMode ? 'Edit Category' : 'Add Category'}</h5>
                                 <button type="button" className="btn-close" onClick={handleCloseModal}></button>
                             </div>
-                            <form onSubmit={handleSubmit}>
-                                <div className="modal-body px-4 pb-4">
-                                    {error && <div className="alert alert-danger py-2 px-3 small border-0 mb-3">{error}</div>}
+                            <div className="modal-body">
+                                <form onSubmit={handleSubmit}>
                                     <div className="mb-3">
-                                        <label className="form-label small fw-semibold text-secondary">Category Name <span className="text-danger">*</span></label>
+                                        <label htmlFor="category_name" className="form-label">Category Name</label>
                                         <input
                                             type="text"
-                                            className="form-input-tech"
+                                            className="form-control"
+                                            id="category_name"
                                             name="category_name"
                                             value={currentCategory.category_name}
                                             onChange={handleInputChange}
-                                            placeholder="e.g. Electronics"
                                             required
                                         />
                                     </div>
-                                    <div className="mb-0">
-                                        <label className="form-label small fw-semibold text-secondary">Description</label>
+                                    <div className="mb-3">
+                                        <label htmlFor="description" className="form-label">Description</label>
                                         <textarea
-                                            className="form-input-tech"
+                                            className="form-control"
+                                            id="description"
                                             name="description"
-                                            rows="3"
                                             value={currentCategory.description}
                                             onChange={handleInputChange}
-                                            placeholder="Optional category description..."
-                                        ></textarea>
+                                            rows="3"
+                                        />
                                     </div>
-                                </div>
-                                <div className="modal-footer border-top-0 px-4 pb-4 pt-0">
-                                    <button type="button" className="btn-secondary-tech" onClick={handleCloseModal}>Cancel</button>
-                                    <button type="submit" className="btn-primary-tech px-4">
-                                        {editMode ? 'Save Changes' : 'Create Category'}
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="modal-footer">
+                                        <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn-primary-tech">
+                                            {editMode ? 'Update' : 'Create'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
