@@ -5,6 +5,7 @@ import publicProductService from "../../services/publicProduct.service";
 import cartService from "../../services/cart.service";
 import wishlistService from "../../services/wishlist.service";
 import authService from "../../services/auth.service";
+import reviewService from "../../services/review.service";
 
 const ProductCatalog = () => {
     const [products, setProducts] = useState([]);
@@ -14,6 +15,15 @@ const ProductCatalog = () => {
     const [cartCount, setCartCount] = useState(0);
     const [wishlistItems, setWishlistItems] = useState([]);
     const [message, setMessage] = useState("");
+
+    // Reviews state
+    const [showReviewsModal, setShowReviewsModal] = useState(false);
+    const [selectedProductForReviews, setSelectedProductForReviews] = useState(null);
+    const [productReviews, setProductReviews] = useState({ averageRating: 0, totalReviews: 0, reviews: [] });
+    const [newReviewRating, setNewReviewRating] = useState(5);
+    const [newReviewText, setNewReviewText] = useState("");
+    const [reviewMessage, setReviewMessage] = useState("");
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -126,6 +136,34 @@ const ProductCatalog = () => {
         }
     };
 
+    const handleShowReviews = async (product) => {
+        setSelectedProductForReviews(product);
+        setShowReviewsModal(true);
+        setReviewMessage("");
+        setNewReviewText("");
+        setNewReviewRating(5);
+        try {
+            const res = await reviewService.getProductReviews(product.productId);
+            setProductReviews(res.data);
+        } catch (err) {
+            console.error("Failed to load reviews", err);
+        }
+    };
+
+    const submitReview = async () => {
+        try {
+            await reviewService.addReview(selectedProductForReviews.productId, newReviewRating, newReviewText);
+            setReviewMessage("Review submitted! It is pending approval.");
+            setNewReviewText("");
+            setNewReviewRating(5);
+            // Refresh reviews
+            const res = await reviewService.getProductReviews(selectedProductForReviews.productId);
+            setProductReviews(res.data);
+        } catch (err) {
+            setReviewMessage(err.response?.data?.error || "Failed to submit review. Ensure order is delivered.");
+        }
+    };
+
     if (loading) {
         return (
             <div className="container py-5">
@@ -235,6 +273,12 @@ const ProductCatalog = () => {
                                                     {isProductInWishlist(product.productId) ? 'In Wishlist' : 'Add to Wishlist'}
                                                 </button>
                                             </div>
+                                            <button
+                                                className="btn btn-outline-info btn-sm w-100 mt-2"
+                                                onClick={() => handleShowReviews(product)}
+                                            >
+                                                Reviews
+                                            </button>
                                         </div>
                                         <div className="card-footer bg-light">
                                             <small className="text-muted">
@@ -247,6 +291,78 @@ const ProductCatalog = () => {
                         </div>
                     </div>
                 ))
+            )}
+
+            {/* Reviews Modal */}
+            {showReviewsModal && selectedProductForReviews && (
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-dialog-centered modal-lg">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Reviews for {selectedProductForReviews.productName}</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowReviewsModal(false)}></button>
+                            </div>
+                            <div className="modal-body" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                                {reviewMessage && <div className="alert alert-info">{reviewMessage}</div>}
+
+                                <div className="d-flex align-items-center mb-4">
+                                    <h4 className="me-3 mb-0">{productReviews.averageRating} / 5</h4>
+                                    <span className="text-muted">({productReviews.totalReviews} total approved reviews)</span>
+                                </div>
+
+                                <div className="mb-4">
+                                    {productReviews.reviews.length > 0 ? (
+                                        productReviews.reviews.map(review => (
+                                            <div key={review.id} className="border p-3 mb-2 rounded bg-light">
+                                                <div className="d-flex justify-content-between mb-2">
+                                                    <strong className="text-primary">{review.customerName}</strong>
+                                                    <span className="text-warning">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+                                                </div>
+                                                <p className="mb-1">{review.reviewText}</p>
+                                                <small className="text-muted">{new Date(review.createdAt).toLocaleDateString()}</small>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-muted">No reviews yet for this product.</p>
+                                    )}
+                                </div>
+
+                                {authService.getCurrentUser() && (
+                                    <div className="card shadow-sm border-0">
+                                        <div className="card-header bg-primary text-white">Write a Review</div>
+                                        <div className="card-body">
+                                            <div className="mb-3">
+                                                <label className="form-label">Rating (1-5)</label>
+                                                <select className="form-select" value={newReviewRating} onChange={e => setNewReviewRating(Number(e.target.value))}>
+                                                    <option value="5">5 - Excellent</option>
+                                                    <option value="4">4 - Very Good</option>
+                                                    <option value="3">3 - Good</option>
+                                                    <option value="2">2 - Fair</option>
+                                                    <option value="1">1 - Poor</option>
+                                                </select>
+                                            </div>
+                                            <div className="mb-3">
+                                                <label className="form-label">Review Text</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    rows="3"
+                                                    maxLength="1000"
+                                                    value={newReviewText}
+                                                    onChange={e => setNewReviewText(e.target.value)}
+                                                    placeholder="Share your experience..."
+                                                ></textarea>
+                                            </div>
+                                            <button className="btn btn-success w-100" onClick={submitReview}>Submit Review</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowReviewsModal(false)}>Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -103,6 +103,11 @@ const Navbar = () => {
                                         Shipping Management
                                     </Link>
                                 </li>
+                                <li className="nav-item">
+                                    <Link to={"/admin/reviews"} className={`nav-link-tech ${location.pathname === '/admin/reviews' ? 'active' : ''}`}>
+                                        Review Management
+                                    </Link>
+                                </li>
                             </>
                         )}
                     </ul>

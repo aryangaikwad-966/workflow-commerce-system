@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import userService from "../../services/user.service";
 import AuthService from "../../services/auth.service";
+import reviewService from "../../services/review.service";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -8,6 +9,8 @@ const Profile = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
     const [user, setUser] = useState(null);
+    const [reviews, setReviews] = useState([]);
+    const [editReviewData, setEditReviewData] = useState(null);
     const navigate = useNavigate();
 
     // Check if user is authenticated
@@ -53,6 +56,43 @@ const Profile = () => {
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchMyReviews = async () => {
+        try {
+            const res = await reviewService.getMyReviews();
+            setReviews(res.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            fetchMyReviews();
+        }
+    }, [user]);
+
+    const handleEditSave = async () => {
+        try {
+            await reviewService.updateReview(editReviewData.id, editReviewData.rating, editReviewData.reviewText);
+            setEditReviewData(null);
+            setMessage("Review updated successfully and is pending approval.");
+            fetchMyReviews();
+        } catch (err) {
+            setMessage(err.response?.data?.error || "Error updating review");
+        }
+    };
+
+    const handleDeleteReview = async (id) => {
+        if (!window.confirm("Delete this review?")) return;
+        try {
+            await reviewService.deleteReview(id);
+            setMessage("Review deleted.");
+            fetchMyReviews();
+        } catch (err) {
+            setMessage("Error deleting review.");
         }
     };
 
@@ -151,6 +191,72 @@ const Profile = () => {
                 <div className="admin-card p-5 text-center shadow-sm">
                     <h4 className="text-secondary mb-3">Profile Not Available</h4>
                     <p className="text-muted">Unable to load your profile information.</p>
+                </div>
+            )}
+
+            {userData && (
+                <div className="mt-5">
+                    <h3 className="mb-4">My Reviews</h3>
+                    {reviews.length === 0 ? (
+                        <p className="text-muted">You have not written any reviews yet.</p>
+                    ) : (
+                        <div className="row">
+                            {reviews.map(r => (
+                                <div key={r.id} className="col-md-6 mb-4">
+                                    <div className="card shadow-sm h-100">
+                                        <div className="card-body">
+                                            <h5 className="card-title fw-bold">{r.productName}</h5>
+                                            <p className="text-warning mb-1">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</p>
+                                            <p className="card-text text-muted">{r.reviewText}</p>
+                                            <div className="mb-3">
+                                                <span className={`badge ${r.status ? 'bg-success' : 'bg-warning'}`}>
+                                                    {r.status ? 'Approved' : 'Pending'}
+                                                </span>
+                                            </div>
+                                            <div className="d-flex gap-2">
+                                                <button className="btn btn-sm btn-outline-primary" onClick={() => setEditReviewData({ ...r })}>Edit</button>
+                                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteReview(r.id)}>Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Edit Review Modal */}
+            {editReviewData && (
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Edit Review</h5>
+                                <button type="button" className="btn-close" onClick={() => setEditReviewData(null)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label">Rating</label>
+                                    <select className="form-select" value={editReviewData.rating} onChange={(e) => setEditReviewData({ ...editReviewData, rating: Number(e.target.value) })}>
+                                        <option value="5">5</option>
+                                        <option value="4">4</option>
+                                        <option value="3">3</option>
+                                        <option value="2">2</option>
+                                        <option value="1">1</option>
+                                    </select>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">Text</label>
+                                    <textarea className="form-control" rows="3" value={editReviewData.reviewText} onChange={(e) => setEditReviewData({ ...editReviewData, reviewText: e.target.value })}></textarea>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-secondary" onClick={() => setEditReviewData(null)}>Cancel</button>
+                                <button className="btn btn-primary" onClick={handleEditSave}>Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

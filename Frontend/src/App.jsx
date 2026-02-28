@@ -19,6 +19,7 @@ import CartDashboard from "./pages/Admin/CartDashboard";
 import Wishlist from "./pages/Customer/Wishlist";
 import Profile from "./pages/Customer/Profile";
 import ShippingDashboard from "./pages/Admin/ShippingDashboard";
+import ReviewDashboard from "./pages/Admin/ReviewDashboard";
 import { CartProvider } from "./contexts/CartContext";
 
 // Admin Route Guard Component
@@ -174,6 +175,14 @@ function App() {
               element={
                 <AdminRoute>
                   <ShippingDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reviews"
+              element={
+                <AdminRoute>
+                  <ReviewDashboard />
                 </AdminRoute>
               }
             />
