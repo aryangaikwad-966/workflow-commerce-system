@@ -1,60 +1,90 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import cartService from "../../services/cart.service";
 import orderService from "../../services/order.service";
-import { useCart } from "../../contexts/CartContext";
 import AuthService from "../../services/auth.service";
 
 const Cart = () => {
+    const [cartItems, setCartItems] = useState([]);
+    const [totalAmount, setTotalAmount] = useState(0);
     const [shippingAddress, setShippingAddress] = useState("");
+    const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState("");
     const [user, setUser] = useState(null);
-    const { cart, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCart();
+    const [updatingItem, setUpdatingItem] = useState(null);
     const navigate = useNavigate();
 
-    // Check if user is authenticated for checkout
     useEffect(() => {
         const currentUser = AuthService.getCurrentUser();
         setUser(currentUser);
+
+        if (!currentUser) {
+            navigate("/login");
+            return;
+        }
+
+        fetchCart();
     }, []);
 
-    // Handle pending checkout after login
-    useEffect(() => {
-        const pendingCheckout = localStorage.getItem('pendingCheckout');
-        if (pendingCheckout && user) {
-            const { shippingAddress: savedAddress, cart: savedCart } = JSON.parse(pendingCheckout);
-            setShippingAddress(savedAddress);
-            localStorage.removeItem('pendingCheckout');
-            setMessage("Logged in successfully! You can now place your order.");
+    const fetchCart = async () => {
+        try {
+            setLoading(true);
+            const response = await cartService.getMyCart();
+            setCartItems(response.data.items || []);
+            setTotalAmount(response.data.totalAmount || 0);
+        } catch (err) {
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                AuthService.logout();
+                navigate("/login");
+            } else {
+                setMessage("Failed to load cart");
+            }
+        } finally {
+            setLoading(false);
         }
-    }, [user?.id]);
+    };
+
+    const handleQuantityChange = async (itemId, newQuantity) => {
+        if (newQuantity < 1) return;
+
+        try {
+            setUpdatingItem(itemId);
+            await cartService.updateCartItem(itemId, newQuantity);
+            fetchCart();
+        } catch (err) {
+            setMessage(err.response?.data?.message || "Failed to update quantity");
+        } finally {
+            setUpdatingItem(null);
+        }
+    };
+
+    const handleRemoveItem = async (itemId) => {
+        if (!window.confirm("Remove this item from cart?")) return;
+
+        try {
+            await cartService.removeFromCart(itemId);
+            setMessage("Item removed");
+            fetchCart();
+        } catch (err) {
+            setMessage(err.response?.data?.message || "Failed to remove item");
+        }
+    };
 
 
     const handleCheckout = async (e) => {
         e.preventDefault();
-        if (cart.length === 0) {
+        if (cartItems.length === 0) {
             setMessage("Your cart is empty");
             return;
         }
         if (!shippingAddress.trim()) {
-            setMessage("Please enter a shipping address");
-            return;
-        }
-
-        // Check if user is authenticated before placing order
-        if (!user) {
-            // Store cart data for after login
-            localStorage.setItem('pendingCheckout', JSON.stringify({
-                shippingAddress,
-                cart
-            }));
-            setMessage("Redirecting to login...");
-            setTimeout(() => navigate("/login"), 1000);
+            setMessage("Please enter shipping address");
             return;
         }
 
         try {
             const orderData = {
-                items: cart.map(item => ({
+                items: cartItems.map(item => ({
                     productId: item.productId,
                     quantity: item.quantity
                 })),
@@ -63,14 +93,27 @@ const Cart = () => {
 
             await orderService.createOrder(orderData);
             setMessage("Order placed successfully!");
-            clearCart();
             setShippingAddress("");
-            setTimeout(() => navigate("/orders"), 2000);
-
+            setTimeout(() => navigate("/orders"), 1500);
         } catch (err) {
             setMessage(err.response?.data?.message || "Failed to place order");
         }
     };
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    };
+
+    if (loading) {
+        return (
+            <div className="container py-5 text-center">
+                <div className="spinner-border" role="status"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="container py-5">
@@ -79,14 +122,10 @@ const Cart = () => {
                     <h2 className="mb-4">Shopping Cart</h2>
                     {message && <div className="alert alert-info">{message}</div>}
 
-                    {cart.length === 0 ? (
+                    {cartItems.length === 0 ? (
                         <div className="admin-card p-5 text-center shadow-sm">
                             <h4 className="text-secondary mb-3">Your cart is empty</h4>
-                            <p className="text-muted">Add some products to get started!</p>
-                            <button
-                                className="btn-primary-tech px-4 py-2"
-                                onClick={() => navigate("/products")}
-                            >
+                            <button className="btn-primary-tech" onClick={() => navigate("/products")}>
                                 Browse Products
                             </button>
                         </div>
@@ -97,7 +136,6 @@ const Cart = () => {
                                     <thead>
                                         <tr>
                                             <th>Product</th>
-                                            <th>SKU</th>
                                             <th>Price</th>
                                             <th>Quantity</th>
                                             <th>Total</th>
@@ -105,27 +143,42 @@ const Cart = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {cart.map((item) => (
-                                            <tr key={item.productId}>
-                                                <td>{item.productName}</td>
-                                                <td>{item.sku}</td>
-                                                <td>${item.price.toFixed(2)}</td>
+                                        {cartItems.map((item) => (
+                                            <tr key={item.id}>
                                                 <td>
-                                                    <div className="input-group" style={{ width: '100px' }}>
-                                                        <input
-                                                            type="number"
-                                                            className="form-control"
-                                                            min="1"
-                                                            value={item.quantity}
-                                                            onChange={(e) => updateQuantity(item.productId, parseInt(e.target.value))}
-                                                        />
+                                                    <div>
+                                                        <h6 className="mb-0">{item.productName}</h6>
+                                                        <small className="text-muted">ID: {item.productId}</small>
                                                     </div>
                                                 </td>
-                                                <td>${(item.price * item.quantity).toFixed(2)}</td>
+                                                <td>{formatCurrency(item.price)}</td>
+                                                <td>
+                                                    <div className="d-flex align-items-center">
+                                                        <button
+                                                            className="btn btn-sm btn-outline-secondary"
+                                                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                                            disabled={updatingItem === item.id}
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <span className="mx-2">{item.quantity}</span>
+                                                        <button
+                                                            className="btn btn-sm btn-outline-secondary"
+                                                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                                            disabled={updatingItem === item.id}
+                                                        >
+                                                            +
+                                                        </button>
+                                                        {updatingItem === item.id && (
+                                                            <span className="spinner-border spinner-border-sm ms-2"></span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td>{formatCurrency(item.totalPrice)}</td>
                                                 <td>
                                                     <button
                                                         className="btn btn-sm btn-danger"
-                                                        onClick={() => removeFromCart(item.productId)}
+                                                        onClick={() => handleRemoveItem(item.id)}
                                                     >
                                                         Remove
                                                     </button>
@@ -135,9 +188,8 @@ const Cart = () => {
                                     </tbody>
                                 </table>
                             </div>
-
-                            <div className="mt-4">
-                                <h4>Total: ${getTotalPrice().toFixed(2)}</h4>
+                            <div className="mt-3">
+                                <h5>Cart Total: {formatCurrency(totalAmount)}</h5>
                             </div>
                         </div>
                     )}
@@ -164,44 +216,18 @@ const Cart = () => {
                             </div>
 
                             <div className="mb-3">
-                                <h5>Order Summary</h5>
-                                <div className="border rounded p-3 bg-light">
-                                    <div className="d-flex justify-content-between mb-2">
-                                        <span>Items ({cart.length}):</span>
-                                        <span>${getTotalPrice().toFixed(2)}</span>
-                                    </div>
-                                    <div className="d-flex justify-content-between">
-                                        <span>Shipping:</span>
-                                        <span>FREE</span>
-                                    </div>
-                                    <hr />
-                                    <div className="d-flex justify-content-between fw-bold">
-                                        <span>Total:</span>
-                                        <span>${getTotalPrice().toFixed(2)}</span>
-                                    </div>
+                                <div className="d-flex justify-content-between">
+                                    <span>Items ({cartItems.length}):</span>
+                                    <span>{formatCurrency(totalAmount)}</span>
                                 </div>
                             </div>
-
-                            {!user ? (
-                                <div className="alert alert-warning">
-                                    <h6 className="alert-heading">Login Required</h6>
-                                    <p className="mb-2">Please log in to place your order.</p>
-                                    <button
-                                        className="btn-primary-tech btn-sm w-100"
-                                        onClick={() => navigate("/login")}
-                                    >
-                                        Login to Checkout
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    type="submit"
-                                    className="btn-primary-tech w-100 py-2"
-                                    disabled={cart.length === 0}
-                                >
-                                    Place Order
-                                </button>
-                            )}
+                            <button
+                                type="submit"
+                                className="btn-primary-tech w-100"
+                                disabled={cartItems.length === 0}
+                            >
+                                Place Order
+                            </button>
                         </form>
                     </div>
                 </div>

@@ -55,6 +55,11 @@ const Navbar = () => {
                             </Link>
                         </li>
                         <li className="nav-item">
+                            <Link to={"/wishlist"} className={`nav-link-tech me-2 ${location.pathname === '/wishlist' ? 'active' : ''}`}>
+                                Wishlist
+                            </Link>
+                        </li>
+                        <li className="nav-item">
                             <Link to={"/orders"} className={`nav-link-tech me-2 ${location.pathname === '/orders' ? 'active' : ''}`}>
                                 My Orders
                             </Link>
@@ -81,6 +86,16 @@ const Navbar = () => {
                                 <li className="nav-item">
                                     <Link to={"/admin/customers"} className={`nav-link-tech ${location.pathname === '/admin/customers' ? 'active' : ''}`}>
                                         Customer Management
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to={"/admin/payments"} className={`nav-link-tech ${location.pathname === '/admin/payments' ? 'active' : ''}`}>
+                                        Payment Management
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to={"/admin/carts"} className={`nav-link-tech ${location.pathname === '/admin/carts' ? 'active' : ''}`}>
+                                        Cart Management
                                     </Link>
                                 </li>
                             </>

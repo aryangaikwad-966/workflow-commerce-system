@@ -14,6 +14,9 @@ import Cart from "./pages/Customer/Cart";
 import MyOrders from "./pages/Customer/MyOrders";
 import OrderDashboard from "./pages/Admin/OrderDashboard";
 import CustomerDashboard from "./pages/Admin/CustomerDashboard";
+import PaymentDashboard from "./pages/Admin/PaymentDashboard";
+import CartDashboard from "./pages/Admin/CartDashboard";
+import Wishlist from "./pages/Customer/Wishlist";
 import Profile from "./pages/Customer/Profile";
 import { CartProvider } from "./contexts/CartContext";
 
@@ -114,6 +117,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/products" element={<ProductCatalog />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/orders" element={<MyOrders />} />
             <Route path="/profile" element={<Profile />} />
             <Route
@@ -145,6 +149,22 @@ function App() {
               element={
                 <AdminRoute>
                   <CustomerDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/payments"
+              element={
+                <AdminRoute>
+                  <PaymentDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/carts"
+              element={
+                <AdminRoute>
+                  <CartDashboard />
                 </AdminRoute>
               }
             />

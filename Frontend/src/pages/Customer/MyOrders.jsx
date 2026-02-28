@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import orderService from "../../services/order.service";
+import paymentService from "../../services/payment.service";
 import AuthService from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
 import { validateAuth, forceLogout } from "../../utils/authUtils";
@@ -10,6 +11,10 @@ const MyOrders = () => {
     const [message, setMessage] = useState("");
     const [user, setUser] = useState(null);
     const [hasFetched, setHasFetched] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState("Credit Card");
+    const [processingPayment, setProcessingPayment] = useState(false);
     const navigate = useNavigate();
 
     // Check if user is authenticated
@@ -81,11 +86,35 @@ const MyOrders = () => {
     const getStatusBadge = (status) => {
         const statusClasses = {
             'Pending': 'bg-warning',
+            'Paid': 'bg-success',
             'Shipped': 'bg-info',
             'Delivered': 'bg-success',
             'Cancelled': 'bg-danger'
         };
         return statusClasses[status] || 'bg-secondary';
+    };
+
+    const handlePayClick = (order) => {
+        setSelectedOrder(order);
+        setPaymentMethod("Credit Card");
+        setShowPaymentModal(true);
+    };
+
+    const handlePaymentSubmit = async () => {
+        if (!selectedOrder) return;
+
+        try {
+            setProcessingPayment(true);
+            const response = await paymentService.processPayment(selectedOrder.orderId, paymentMethod);
+            setMessage(response.data.message);
+            setShowPaymentModal(false);
+            setSelectedOrder(null);
+            fetchOrders();
+        } catch (err) {
+            setMessage(err.response?.data?.message || "Payment processing failed.");
+        } finally {
+            setProcessingPayment(false);
+        }
     };
 
     // Check if user is authenticated before showing content
@@ -155,18 +184,82 @@ const MyOrders = () => {
                                         <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                                         <td>
                                             {order.orderStatus === 'Pending' && (
-                                                <button
-                                                    className="btn btn-sm btn-danger"
-                                                    onClick={() => handleCancelOrder(order.orderId)}
-                                                >
-                                                    Cancel
-                                                </button>
+                                                <>
+                                                    <button
+                                                        className="btn btn-sm btn-success me-2"
+                                                        onClick={() => handlePayClick(order)}
+                                                    >
+                                                        Pay Now
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm btn-danger"
+                                                        onClick={() => handleCancelOrder(order.orderId)}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </>
                                             )}
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Payment Modal */}
+            {showPaymentModal && selectedOrder && (
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Process Payment</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowPaymentModal(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p><strong>Order ID:</strong> #{selectedOrder.orderId}</p>
+                                <p><strong>Amount:</strong> ${selectedOrder.totalAmount ? selectedOrder.totalAmount.toFixed(2) : '0.00'}</p>
+                                <div className="mb-3">
+                                    <label className="form-label">Payment Method</label>
+                                    <select
+                                        className="form-select"
+                                        value={paymentMethod}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                    >
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="PayPal">PayPal</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <p className="text-muted small">Note: Payment simulation has 90% success rate.</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowPaymentModal(false)}
+                                    disabled={processingPayment}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-success"
+                                    onClick={handlePaymentSubmit}
+                                    disabled={processingPayment}
+                                >
+                                    {processingPayment ? (
+                                        <>
+                                            <span className="spinner-border spinner-border-sm me-2"></span>
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        'Confirm Payment'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

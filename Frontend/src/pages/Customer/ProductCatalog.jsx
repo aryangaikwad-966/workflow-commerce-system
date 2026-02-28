@@ -2,20 +2,38 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import publicCategoryService from "../../services/publicCategory.service";
 import publicProductService from "../../services/publicProduct.service";
-import { useCart } from "../../contexts/CartContext";
+import cartService from "../../services/cart.service";
+import wishlistService from "../../services/wishlist.service";
+import authService from "../../services/auth.service";
 
 const ProductCatalog = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [loading, setLoading] = useState(true);
-    const { addToCart, getCartCount } = useCart();
+    const [cartCount, setCartCount] = useState(0);
+    const [wishlistItems, setWishlistItems] = useState([]);
+    const [message, setMessage] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchCategories();
         fetchProducts();
+        fetchCartCount();
+        fetchWishlistItems();
     }, []);
+
+    const fetchCartCount = async () => {
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser) return;
+
+        try {
+            const response = await cartService.getMyCart();
+            setCartCount(response.data.itemCount || 0);
+        } catch (err) {
+            // Silently ignore cart fetch errors
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -56,6 +74,58 @@ const ProductCatalog = () => {
         return acc;
     }, {});
 
+    const handleAddToCart = async (product) => {
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser) {
+            navigate("/login");
+            return;
+        }
+
+        try {
+            await cartService.addToCart(product.productId, 1);
+            setMessage(`${product.productName} added to cart!`);
+            fetchCartCount();
+            setTimeout(() => setMessage(""), 2000);
+        } catch (err) {
+            setMessage(err.response?.data?.message || "Failed to add to cart");
+            setTimeout(() => setMessage(""), 3000);
+        }
+    };
+
+    const fetchWishlistItems = async () => {
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser) return;
+
+        try {
+            const response = await wishlistService.getMyWishlist();
+            setWishlistItems(response.data || []);
+        } catch (err) {
+            // Silently ignore wishlist fetch errors
+        }
+    };
+
+    const isProductInWishlist = (productId) => {
+        return wishlistItems.some(item => item.productId === productId);
+    };
+
+    const handleAddToWishlist = async (product) => {
+        const currentUser = authService.getCurrentUser();
+        if (!currentUser) {
+            navigate("/login");
+            return;
+        }
+
+        try {
+            await wishlistService.addToWishlist(product.productId);
+            setMessage(`${product.productName} added to wishlist!`);
+            fetchWishlistItems();
+            setTimeout(() => setMessage(""), 2000);
+        } catch (err) {
+            setMessage(err.response?.data?.message || "Failed to add to wishlist");
+            setTimeout(() => setMessage(""), 3000);
+        }
+    };
+
     if (loading) {
         return (
             <div className="container py-5">
@@ -71,6 +141,12 @@ const ProductCatalog = () => {
 
     return (
         <div className="container py-5">
+            {message && (
+                <div className="alert alert-info alert-dismissible fade show" role="alert">
+                    {message}
+                    <button type="button" className="btn-close" onClick={() => setMessage("")}></button>
+                </div>
+            )}
             <div className="row mb-4">
                 <div className="col-12">
                     <h2 className="mb-4">Product Catalog</h2>
@@ -137,10 +213,10 @@ const ProductCatalog = () => {
                                                     {product.inventoryCount > 0 ? `In Stock (${product.inventoryCount})` : 'Out of Stock'}
                                                 </span>
                                             </div>
-                                            <div className="d-flex gap-2">
+                                            <div className="d-flex gap-2 flex-wrap">
                                                 <button
                                                     className="btn-primary-tech btn-sm flex-fill"
-                                                    onClick={() => addToCart(product)}
+                                                    onClick={() => handleAddToCart(product)}
                                                     disabled={product.inventoryCount === 0}
                                                 >
                                                     Add to Cart
@@ -149,7 +225,14 @@ const ProductCatalog = () => {
                                                     className="btn-outline-tech btn-sm"
                                                     onClick={() => navigate('/cart')}
                                                 >
-                                                    View Cart ({getCartCount()})
+                                                    View Cart ({cartCount})
+                                                </button>
+                                                <button
+                                                    className={`btn-sm flex-fill ${isProductInWishlist(product.productId) ? 'btn-secondary' : 'btn-outline-primary'}`}
+                                                    onClick={() => handleAddToWishlist(product)}
+                                                    disabled={isProductInWishlist(product.productId)}
+                                                >
+                                                    {isProductInWishlist(product.productId) ? 'In Wishlist' : 'Add to Wishlist'}
                                                 </button>
                                             </div>
                                         </div>
