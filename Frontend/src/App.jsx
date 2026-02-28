@@ -20,6 +20,7 @@ import Wishlist from "./pages/Customer/Wishlist";
 import Profile from "./pages/Customer/Profile";
 import ShippingDashboard from "./pages/Admin/ShippingDashboard";
 import ReviewDashboard from "./pages/Admin/ReviewDashboard";
+import CouponDashboard from "./pages/Admin/CouponDashboard";
 import { CartProvider } from "./contexts/CartContext";
 
 // Admin Route Guard Component
@@ -183,6 +184,14 @@ function App() {
               element={
                 <AdminRoute>
                   <ReviewDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/coupons"
+              element={
+                <AdminRoute>
+                  <CouponDashboard />
                 </AdminRoute>
               }
             />

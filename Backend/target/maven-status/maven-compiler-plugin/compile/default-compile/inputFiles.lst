@@ -1,3 +1,5 @@
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/CouponRepository.java
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/CouponCreateRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/payload/response/JwtResponse.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/payload/request/OrderItemRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/CartItemRepository.java
@@ -18,10 +20,12 @@
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/payload/request/LoginRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/controller/ReviewController.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/model/Wishlist.java
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/CouponApplyResponse.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/security/jwt/JwtUtils.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/model/Order.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/ShippingStatusUpdateRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/CategoryRepository.java
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/controller/CouponController.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/model/Product.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/ReviewRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/controller/OrderController.java
@@ -29,11 +33,13 @@
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/security/WebSecurityConfig.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/controller/CategoryController.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/controller/PaymentController.java
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/model/Coupon.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/WishlistItemRepository.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/OrderItemRepository.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/CartRepository.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/payload/request/SignupRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/RoleRepository.java
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/CouponApplyRequest.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/UserRepository.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/service/ProductService.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/repository/PaymentRepository.java
@@ -53,6 +59,7 @@
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/model/Cart.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/service/ShippingService.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/OrderDTO.java
+/Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/service/CouponService.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/dto/ShippingResponse.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/security/jwt/AuthTokenFilter.java
 /Users/aryangaikwad/Desktop/workflow-commerce-systemm/Backend/src/main/java/com/example/workflowcommerce/controller/AuthController.java

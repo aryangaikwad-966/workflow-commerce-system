@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import cartService from "../../services/cart.service";
 import orderService from "../../services/order.service";
 import AuthService from "../../services/auth.service";
+import couponService from "../../services/coupon.service";
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -12,6 +13,14 @@ const Cart = () => {
     const [message, setMessage] = useState("");
     const [user, setUser] = useState(null);
     const [updatingItem, setUpdatingItem] = useState(null);
+
+    // Coupon state
+    const [couponCode, setCouponCode] = useState("");
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [finalTotal, setFinalTotal] = useState(0);
+    const [couponMessage, setCouponMessage] = useState("");
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,6 +41,13 @@ const Cart = () => {
             const response = await cartService.getMyCart();
             setCartItems(response.data.items || []);
             setTotalAmount(response.data.totalAmount || 0);
+            setFinalTotal(response.data.totalAmount || 0);
+
+            // Reset coupon when cart changes
+            setAppliedCoupon(null);
+            setDiscountAmount(0);
+            setCouponCode("");
+            setCouponMessage("");
         } catch (err) {
             if (err.response?.status === 401 || err.response?.status === 403) {
                 AuthService.logout();
@@ -71,6 +87,22 @@ const Cart = () => {
     };
 
 
+    const handleApplyCoupon = async () => {
+        if (!couponCode) return;
+        try {
+            const res = await couponService.applyCoupon(couponCode, totalAmount);
+            setDiscountAmount(res.data.discountAmount);
+            setFinalTotal(res.data.newTotal);
+            setAppliedCoupon(couponCode);
+            setCouponMessage(res.data.message);
+        } catch (err) {
+            setCouponMessage(err.response?.data?.error || "Error applying coupon");
+            setAppliedCoupon(null);
+            setDiscountAmount(0);
+            setFinalTotal(totalAmount);
+        }
+    };
+
     const handleCheckout = async (e) => {
         e.preventDefault();
         if (cartItems.length === 0) {
@@ -88,7 +120,8 @@ const Cart = () => {
                     productId: item.productId,
                     quantity: item.quantity
                 })),
-                shippingAddress: shippingAddress
+                shippingAddress: shippingAddress,
+                couponCode: appliedCoupon
             };
 
             await orderService.createOrder(orderData);
@@ -96,7 +129,7 @@ const Cart = () => {
             setShippingAddress("");
             setTimeout(() => navigate("/orders"), 1500);
         } catch (err) {
-            setMessage(err.response?.data?.message || "Failed to place order");
+            setMessage(err.response?.data?.error || err.response?.data?.message || "Failed to place order");
         }
     };
 
@@ -215,10 +248,50 @@ const Cart = () => {
                                 />
                             </div>
 
-                            <div className="mb-3">
-                                <div className="d-flex justify-content-between">
-                                    <span>Items ({cartItems.length}):</span>
+                            <div className="mb-4">
+                                <label className="form-label">Apply Coupon</label>
+                                <div className="input-group">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Coupon code"
+                                        value={couponCode}
+                                        onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                                        disabled={appliedCoupon != null}
+                                    />
+                                    {appliedCoupon ? (
+                                        <button className="btn btn-outline-danger" type="button" onClick={() => {
+                                            setAppliedCoupon(null);
+                                            setDiscountAmount(0);
+                                            setFinalTotal(totalAmount);
+                                            setCouponCode("");
+                                            setCouponMessage("");
+                                        }}>Remove</button>
+                                    ) : (
+                                        <button className="btn btn-outline-secondary" type="button" onClick={handleApplyCoupon}>Apply</button>
+                                    )}
+                                </div>
+                                {couponMessage && (
+                                    <div className={`mt-2 small ${appliedCoupon ? 'text-success' : 'text-danger'}`}>
+                                        {couponMessage}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mb-3 border-top pt-3">
+                                <div className="d-flex justify-content-between mb-2">
+                                    <span>Subtotal:</span>
                                     <span>{formatCurrency(totalAmount)}</span>
+                                </div>
+                                {appliedCoupon && (
+                                    <div className="d-flex justify-content-between mb-2 text-success">
+                                        <span>Discount:</span>
+                                        <span>-{formatCurrency(discountAmount)}</span>
+                                    </div>
+                                )}
+                                <div className="d-flex justify-content-between fw-bold h5">
+                                    <span>Total:</span>
+                                    <span>{formatCurrency(finalTotal)}</span>
                                 </div>
                             </div>
                             <button

@@ -29,6 +29,7 @@ import com.example.workflowcommerce.payload.request.OrderRequest;
 import com.example.workflowcommerce.payload.response.MessageResponse;
 import com.example.workflowcommerce.repository.ProductRepository;
 import com.example.workflowcommerce.repository.UserRepository;
+import com.example.workflowcommerce.service.CouponService;
 import com.example.workflowcommerce.service.OrderService;
 
 import jakarta.validation.Valid;
@@ -46,6 +47,9 @@ public class OrderController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CouponService couponService;
 
     // USER: Create Order
     @PostMapping
@@ -101,6 +105,13 @@ public class OrderController {
                 }
             }
 
+            // Validate and apply coupon if present
+            if (orderRequest.getCouponCode() != null && !orderRequest.getCouponCode().isBlank()) {
+                com.example.workflowcommerce.dto.CouponApplyResponse applyResponse = 
+                    couponService.applyCoupon(orderRequest.getCouponCode(), totalAmount);
+                totalAmount = applyResponse.getNewTotal();
+            }
+
             order.setTotalAmount(totalAmount);
             order.setOrderItems(orderItems);
 
@@ -110,6 +121,11 @@ public class OrderController {
                 orderService.saveOrderItem(item);
                 // Update product inventory
                 orderService.updateProductInventory(item.getProduct().getProductId(), item.getQuantity());
+            }
+
+            // Increment coupon usage
+            if (orderRequest.getCouponCode() != null && !orderRequest.getCouponCode().isBlank()) {
+                couponService.incrementUsageCount(orderRequest.getCouponCode());
             }
 
             return ResponseEntity.ok(new MessageResponse("Order placed successfully. Order ID: " + order.getOrderId()));
