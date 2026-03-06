@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -61,6 +63,9 @@ class WorkflowEngineServiceTest {
 
     @Mock
     private WorkflowLogRepository workflowLogRepository;
+
+    @Mock
+    private OrderWorkflowRuleValidator orderWorkflowRuleValidator;
 
     @InjectMocks
     private WorkflowEngineService workflowEngineService;
@@ -348,6 +353,7 @@ class WorkflowEngineServiceTest {
                     .thenReturn(testInstance);
             when(workflowLogRepository.save(any(WorkflowLog.class)))
                     .thenReturn(new WorkflowLog());
+            doNothing().when(orderWorkflowRuleValidator).validateTransition(anyString(), anyLong(), anyString(), any());
 
             // When & Then - Should not throw
             assertDoesNotThrow(() -> {
