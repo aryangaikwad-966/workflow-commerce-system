@@ -14,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -25,7 +26,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_order_user", columnList = "user_id"),
+    @Index(name = "idx_order_status", columnList = "order_status"),
+    @Index(name = "idx_order_workflow", columnList = "workflow_instance_id"),
+    @Index(name = "idx_order_created", columnList = "createdAt")
+})
 public class Order {
     public Order() {}
     
@@ -53,6 +59,10 @@ public class Order {
     @Size(max = 50)
     @Column(name = "order_status", nullable = false)
     private String orderStatus;
+
+    // Workflow integration - links order to workflow engine
+    @Column(name = "workflow_instance_id")
+    private Long workflowInstanceId;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -82,6 +92,9 @@ public class Order {
     
     public String getOrderStatus() { return orderStatus; }
     public void setOrderStatus(String orderStatus) { this.orderStatus = orderStatus; }
+    
+    public Long getWorkflowInstanceId() { return workflowInstanceId; }
+    public void setWorkflowInstanceId(Long workflowInstanceId) { this.workflowInstanceId = workflowInstanceId; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

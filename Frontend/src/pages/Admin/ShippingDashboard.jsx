@@ -1,6 +1,102 @@
 import React, { useState, useEffect } from "react";
 import shippingService from "../../services/shipping.service";
-import orderService from "../../services/order.service";
+import adminOrderService from "../../services/adminOrder.service";
+
+// Shipping Progress Timeline Component with tick/checkmarks
+const ShippingProgressTimeline = ({ currentStatus }) => {
+    const stages = [
+        { key: "Shipped", label: "Processing/Shipped", icon: "📦" },
+        { key: "In Transit", label: "In Transit", icon: "🚚" },
+        { key: "Delivered", label: "Delivered", icon: "✅" }
+    ];
+
+    const getStageIndex = (status) => {
+        const idx = stages.findIndex(s => s.key === status);
+        return idx >= 0 ? idx : 0;
+    };
+
+    const currentIndex = getStageIndex(currentStatus);
+
+    return (
+        <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0',
+            padding: '8px 0'
+        }}>
+            {stages.map((stage, index) => {
+                const isCompleted = index < currentIndex;
+                const isCurrent = index === currentIndex;
+                const isPending = index > currentIndex;
+
+                return (
+                    <React.Fragment key={stage.key}>
+                        {/* Stage Circle */}
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            position: 'relative'
+                        }}>
+                            <div style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '16px',
+                                fontWeight: 'bold',
+                                background: isCompleted
+                                    ? 'linear-gradient(135deg, #28a745, #20c997)'
+                                    : isCurrent
+                                        ? 'linear-gradient(135deg, #007bff, #6f42c1)'
+                                        : '#e9ecef',
+                                color: isCompleted || isCurrent ? 'white' : '#6c757d',
+                                border: isCurrent ? '3px solid #007bff' : 'none',
+                                boxShadow: isCompleted
+                                    ? '0 2px 8px rgba(40, 167, 69, 0.4)'
+                                    : isCurrent
+                                        ? '0 2px 12px rgba(0, 123, 255, 0.5)'
+                                        : 'none',
+                                transition: 'all 0.3s ease'
+                            }}>
+                                {isCompleted ? '✓' : stage.icon}
+                            </div>
+                            <span style={{
+                                fontSize: '11px',
+                                marginTop: '4px',
+                                color: isCompleted ? '#28a745' : isCurrent ? '#007bff' : '#6c757d',
+                                fontWeight: isCompleted || isCurrent ? '600' : '400',
+                                textAlign: 'center',
+                                maxWidth: '70px'
+                            }}>
+                                {stage.label}
+                            </span>
+                        </div>
+
+                        {/* Connector Line */}
+                        {index < stages.length - 1 && (
+                            <div style={{
+                                flex: '1',
+                                height: '4px',
+                                minWidth: '30px',
+                                maxWidth: '60px',
+                                background: index < currentIndex
+                                    ? 'linear-gradient(90deg, #28a745, #20c997)'
+                                    : '#dee2e6',
+                                borderRadius: '2px',
+                                margin: '0 4px',
+                                marginBottom: '20px',
+                                transition: 'background 0.3s ease'
+                            }} />
+                        )}
+                    </React.Fragment>
+                );
+            })}
+        </div>
+    );
+};
 
 const ShippingDashboard = () => {
     const [shippings, setShippings] = useState([]);
@@ -43,7 +139,7 @@ const ShippingDashboard = () => {
     const fetchOrders = async () => {
         // Fetch orders and filter those with "Paid" status so they can be shipped
         try {
-            const res = await orderService.getAllOrders();
+            const res = await adminOrderService.getAllOrders();
             if (Array.isArray(res.data)) {
                 // Only Paid orders can be shipped
                 setOrders(res.data.filter(order => order.orderStatus === "Paid"));
@@ -138,7 +234,7 @@ const ShippingDashboard = () => {
                                     <th>Courier</th>
                                     <th>Tracking Number</th>
                                     <th>Cost</th>
-                                    <th>Status</th>
+                                    <th style={{ minWidth: '280px' }}>Progress</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -151,11 +247,7 @@ const ShippingDashboard = () => {
                                         <td>{shipping.trackingNumber}</td>
                                         <td>${shipping.shippingCost}</td>
                                         <td>
-                                            <span className={`badge ${shipping.shippingStatus === 'Delivered' ? 'bg-success' :
-                                                    shipping.shippingStatus === 'In Transit' ? 'bg-primary' : 'bg-info'
-                                                }`}>
-                                                {shipping.shippingStatus}
-                                            </span>
+                                            <ShippingProgressTimeline currentStatus={shipping.shippingStatus} />
                                         </td>
                                         <td>
                                             {shipping.shippingStatus !== 'Delivered' && (
@@ -266,36 +358,67 @@ const ShippingDashboard = () => {
             {/* Update Status Modal */}
             {showUpdateModal && selectedShipping && (
                 <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog">
+                    <div className="modal-dialog modal-lg">
                         <div className="modal-content">
-                            <div className="modal-header">
+                            <div className="modal-header" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)', color: 'white' }}>
                                 <h5 className="modal-title">Update Shipping Status</h5>
-                                <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
+                                <button type="button" className="btn-close btn-close-white" onClick={() => setShowUpdateModal(false)}></button>
                             </div>
                             <div className="modal-body">
-                                <p><strong>Order ID:</strong> #{selectedShipping.orderId}</p>
-                                <p><strong>Current Status:</strong> {selectedShipping.shippingStatus}</p>
+                                <div className="row mb-3">
+                                    <div className="col-6">
+                                        <p><strong>Order ID:</strong> #{selectedShipping.orderId}</p>
+                                    </div>
+                                    <div className="col-6">
+                                        <p><strong>Tracking:</strong> {selectedShipping.trackingNumber}</p>
+                                    </div>
+                                </div>
+
+                                {/* Current Progress Timeline */}
+                                <div className="mb-4 p-3" style={{ background: '#f8f9fa', borderRadius: '8px' }}>
+                                    <p className="mb-2 fw-bold text-muted small">Current Progress:</p>
+                                    <ShippingProgressTimeline currentStatus={selectedShipping.shippingStatus} />
+                                </div>
+
+                                {/* Status Selection - Only allow sequential transitions */}
                                 <div className="mb-3">
-                                    <label className="form-label">New Status</label>
-                                    <select
-                                        className="form-select"
-                                        value={updateStatus}
-                                        onChange={(e) => setUpdateStatus(e.target.value)}
-                                    >
+                                    <label className="form-label fw-bold">Move to Next Step:</label>
+                                    <div className="d-flex gap-2">
                                         {selectedShipping.shippingStatus === "Shipped" && (
-                                            <option value="In Transit">In Transit</option>
+                                            <button
+                                                className={`btn flex-fill ${updateStatus === "In Transit" ? 'btn-primary' : 'btn-outline-primary'}`}
+                                                onClick={() => setUpdateStatus("In Transit")}
+                                            >
+                                                🚚 In Transit
+                                            </button>
                                         )}
                                         {selectedShipping.shippingStatus === "In Transit" && (
-                                            <option value="Delivered">Delivered</option>
+                                            <button
+                                                className={`btn flex-fill ${updateStatus === "Delivered" ? 'btn-success' : 'btn-outline-success'}`}
+                                                onClick={() => setUpdateStatus("Delivered")}
+                                            >
+                                                ✅ Delivered
+                                            </button>
                                         )}
-                                        {/* For strict correctness, we only let them step forward */}
-                                        <option value="Delivered">Delivered</option>
-                                    </select>
+                                    </div>
+                                    <small className="text-muted mt-2 d-block">
+                                        <strong>Note:</strong> Status must progress sequentially: Shipped → In Transit → Delivered
+                                    </small>
                                 </div>
+
+                                {/* Preview of new progress */}
+                                {updateStatus && (
+                                    <div className="p-3" style={{ background: '#e8f5e9', borderRadius: '8px' }}>
+                                        <p className="mb-2 fw-bold text-success small">After Update:</p>
+                                        <ShippingProgressTimeline currentStatus={updateStatus} />
+                                    </div>
+                                )}
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowUpdateModal(false)}>Close</button>
-                                <button type="button" className="btn btn-success" onClick={handleUpdateStatus}>Save Changes</button>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowUpdateModal(false)}>Cancel</button>
+                                <button type="button" className="btn btn-success" onClick={handleUpdateStatus}>
+                                    Confirm Update
+                                </button>
                             </div>
                         </div>
                     </div>

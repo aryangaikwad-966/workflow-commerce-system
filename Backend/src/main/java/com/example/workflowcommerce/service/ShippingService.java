@@ -1,18 +1,22 @@
 package com.example.workflowcommerce.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.workflowcommerce.dto.ShippingCreateRequest;
 import com.example.workflowcommerce.dto.ShippingResponse;
+import com.example.workflowcommerce.event.OrderDeliveredEvent;
+import com.example.workflowcommerce.event.ShippingCreatedEvent;
 import com.example.workflowcommerce.model.Order;
 import com.example.workflowcommerce.model.Shipping;
 import com.example.workflowcommerce.repository.OrderRepository;
 import com.example.workflowcommerce.repository.ShippingRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ShippingService {
@@ -22,6 +26,9 @@ public class ShippingService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     // Allowed values: Shipped, In Transit, Delivered
     public static final String STATUS_SHIPPED = "Shipped";
@@ -41,8 +48,10 @@ public class ShippingService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
 
-        if (!"Paid".equalsIgnoreCase(order.getOrderStatus())) {
-            throw new RuntimeException("Cannot ship unpaid order. Current order status: " + order.getOrderStatus());
+        // Order must be paid (Paid) or in processing state (Processing)
+        String status = order.getOrderStatus();
+        if (!"Paid".equalsIgnoreCase(status) && !"Processing".equalsIgnoreCase(status)) {
+            throw new RuntimeException("Cannot ship order. Order must be Paid or Processing. Current status: " + status);
         }
 
         if (shippingRepository.existsByOrderOrderId(orderId)) {
@@ -66,6 +75,9 @@ public class ShippingService {
         order.setOrderStatus("Shipped");
         orderRepository.save(order);
 
+        // Publish event - workflow transition will happen AFTER this transaction commits
+        eventPublisher.publishEvent(new ShippingCreatedEvent(this, orderId, request.getTrackingNumber()));
+
         return new ShippingResponse(shipping);
     }
 
@@ -80,17 +92,17 @@ public class ShippingService {
             throw new RuntimeException("Cannot edit shipping once Delivered");
         }
 
-        // Allowed transitions: Shipped -> In Transit -> Delivered
-        if (STATUS_DELIVERED.equals(newStatus)) {
-             // In a perfect State Machine we'd strictly check In Transit -> Delivered, 
-             // but sometimes it goes directly from Shipped -> Delivered.
-             // "Cannot skip stages" based on instructions:
-             if (!STATUS_IN_TRANSIT.equals(currentStatus) && !STATUS_SHIPPED.equals(currentStatus)) {
-                 // The rules said "cannot skip stages", let's strictly enforce: Shipped -> In Transit -> Delivered
-                 if (STATUS_SHIPPED.equals(currentStatus)) {
-                     throw new RuntimeException("Cannot skip 'In Transit' stage. Current status: " + currentStatus);
-                 }
-             }
+        // Strictly enforce sequential transitions: Shipped -> In Transit -> Delivered
+        if (STATUS_IN_TRANSIT.equals(newStatus)) {
+            // Can only go to In Transit from Shipped
+            if (!STATUS_SHIPPED.equals(currentStatus)) {
+                throw new RuntimeException("Cannot transition to 'In Transit'. Current status must be 'Shipped'. Current: " + currentStatus);
+            }
+        } else if (STATUS_DELIVERED.equals(newStatus)) {
+            // Can only go to Delivered from In Transit (enforce no skipping)
+            if (!STATUS_IN_TRANSIT.equals(currentStatus)) {
+                throw new RuntimeException("Cannot skip 'In Transit' stage. Must go Shipped -> In Transit -> Delivered. Current: " + currentStatus);
+            }
         }
 
         if (!STATUS_SHIPPED.equals(newStatus) && !STATUS_IN_TRANSIT.equals(newStatus) && !STATUS_DELIVERED.equals(newStatus)) {
@@ -103,6 +115,9 @@ public class ShippingService {
         if (STATUS_DELIVERED.equals(newStatus)) {
             order.setOrderStatus("Delivered");
             orderRepository.save(order);
+            
+            // Publish event - workflow transition will happen AFTER this transaction commits
+            eventPublisher.publishEvent(new OrderDeliveredEvent(this, order.getOrderId()));
         }
 
         return new ShippingResponse(shippingRepository.save(shipping));

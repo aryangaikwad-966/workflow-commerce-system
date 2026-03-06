@@ -27,10 +27,13 @@ import com.example.workflowcommerce.model.User;
 import com.example.workflowcommerce.payload.request.OrderItemRequest;
 import com.example.workflowcommerce.payload.request.OrderRequest;
 import com.example.workflowcommerce.payload.response.MessageResponse;
+import com.example.workflowcommerce.repository.PaymentRepository;
 import com.example.workflowcommerce.repository.ProductRepository;
+import com.example.workflowcommerce.repository.ShippingRepository;
 import com.example.workflowcommerce.repository.UserRepository;
 import com.example.workflowcommerce.service.CouponService;
 import com.example.workflowcommerce.service.OrderService;
+import com.example.workflowcommerce.service.workflow.WorkflowIntegrationService;
 
 import jakarta.validation.Valid;
 
@@ -50,6 +53,15 @@ public class OrderController {
 
     @Autowired
     private CouponService couponService;
+
+    @Autowired
+    private WorkflowIntegrationService workflowIntegrationService;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private ShippingRepository shippingRepository;
 
     // USER: Create Order
     @PostMapping
@@ -128,7 +140,14 @@ public class OrderController {
                 couponService.incrementUsageCount(orderRequest.getCouponCode());
             }
 
-            return ResponseEntity.ok(new MessageResponse("Order placed successfully. Order ID: " + order.getOrderId()));
+            // Initialize workflow for the new order
+            // Note: Payment and Shipping records are created when customer pays and admin ships
+            // This follows the proper workflow: CREATED -> PAYMENT_PENDING -> PAID -> PROCESSING -> SHIPPED -> DELIVERED
+            workflowIntegrationService.onOrderCreated(order.getOrderId(), currentUser.getUsername());
+
+            return ResponseEntity.ok(new MessageResponse(
+                "Order placed successfully. Order ID: " + order.getOrderId() + 
+                ". Payment and Shipping operations created. Admin can process them in workflow."));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error creating order: " + e.getMessage()));

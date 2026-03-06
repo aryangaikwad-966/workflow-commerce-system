@@ -82,6 +82,8 @@ public class WebSecurityConfig {
               .requestMatchers("/api/products/public").permitAll()
               .requestMatchers("/api/categories/public").permitAll()
               .requestMatchers("/api/test/**").permitAll()
+              // Swagger/OpenAPI documentation
+              .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
               .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
               .anyRequest().authenticated()
         );

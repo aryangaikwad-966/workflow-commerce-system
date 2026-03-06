@@ -73,7 +73,7 @@ public class PaymentController {
             // Process payment
             Payment payment = paymentService.processPayment(order, paymentRequest.getPaymentMethod());
 
-            if ("Paid".equals(payment.getPaymentStatus())) {
+            if ("COMPLETED".equals(payment.getPaymentStatus())) {
                 return ResponseEntity.ok(new MessageResponse("Payment successful! Order status updated to Paid."));
             } else {
                 return ResponseEntity.ok(new MessageResponse("Payment failed. Please try again."));
@@ -127,8 +127,9 @@ public class PaymentController {
 
             Payment payment = paymentOpt.get();
 
-            if (!"Paid".equals(payment.getPaymentStatus())) {
-                return ResponseEntity.badRequest().body(new MessageResponse("Only paid payments can be refunded."));
+            String status = payment.getPaymentStatus();
+            if (!"Paid".equalsIgnoreCase(status) && !"COMPLETED".equalsIgnoreCase(status)) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Only paid/completed payments can be refunded."));
             }
 
             paymentService.refundPayment(paymentId);

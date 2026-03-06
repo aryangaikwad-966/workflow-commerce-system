@@ -1,14 +1,15 @@
 package com.example.workflowcommerce.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.workflowcommerce.event.PaymentCompletedEvent;
+import com.example.workflowcommerce.event.PaymentRefundedEvent;
 import com.example.workflowcommerce.model.Order;
 import com.example.workflowcommerce.model.Payment;
 import com.example.workflowcommerce.repository.OrderRepository;
@@ -23,28 +24,38 @@ public class PaymentService {
     @Autowired
     private OrderRepository orderRepository;
 
-    private final Random random = new Random();
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Payment processPayment(Order order, String paymentMethod) {
-        // Simulate payment processing: 90% success, 10% failure
-        boolean paymentSuccess = random.nextDouble() < 0.9;
+        // Check if there's already a completed payment
+        Optional<Payment> existingPayment = paymentRepository.findByOrder(order);
+        if (existingPayment.isPresent() && "COMPLETED".equals(existingPayment.get().getPaymentStatus())) {
+            return existingPayment.get(); // Return existing completed payment
+        }
+
+        // If there's a failed payment, delete it and create new one
+        if (existingPayment.isPresent()) {
+            paymentRepository.delete(existingPayment.get());
+        }
 
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setAmount(order.getTotalAmount());
         payment.setPaymentMethod(paymentMethod);
+        payment.setPaymentStatus("COMPLETED");
+        
+        // Update order status to Paid
+        order.setOrderStatus("Paid");
+        orderRepository.save(order);
 
-        if (paymentSuccess) {
-            payment.setPaymentStatus("Paid");
-            // Update order status to Paid
-            order.setOrderStatus("Paid");
-            orderRepository.save(order);
-        } else {
-            payment.setPaymentStatus("Failed");
-        }
+        Payment savedPayment = paymentRepository.save(payment);
 
-        return paymentRepository.save(payment);
+        // Publish event - workflow transition will happen AFTER this transaction commits
+        eventPublisher.publishEvent(new PaymentCompletedEvent(this, order.getOrderId()));
+
+        return savedPayment;
     }
 
     @Transactional
@@ -57,19 +68,24 @@ public class PaymentService {
 
         Payment payment = paymentOpt.get();
 
-        if (!"Paid".equals(payment.getPaymentStatus())) {
-            throw new RuntimeException("Only paid payments can be refunded");
+        if (!"COMPLETED".equals(payment.getPaymentStatus())) {
+            throw new RuntimeException("Only completed payments can be refunded");
         }
 
         // Update payment status to Refunded
-        payment.setPaymentStatus("Refunded");
+        payment.setPaymentStatus("REFUNDED");
         
-        // Update order status to Cancelled
+        // Update order status to Refunded (matching workflow state)
         Order order = payment.getOrder();
-        order.setOrderStatus("Cancelled");
+        order.setOrderStatus("Refunded");
         orderRepository.save(order);
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+
+        // Publish event - workflow transition will happen AFTER this transaction commits
+        eventPublisher.publishEvent(new PaymentRefundedEvent(this, order.getOrderId()));
+
+        return savedPayment;
     }
 
     public List<Payment> getAllPayments() {
@@ -93,6 +109,7 @@ public class PaymentService {
     }
 
     public boolean hasPaymentForOrder(Order order) {
-        return paymentRepository.existsByOrder(order);
+        Optional<Payment> payment = paymentRepository.findByOrder(order);
+        return payment.isPresent() && "COMPLETED".equals(payment.get().getPaymentStatus());
     }
 }

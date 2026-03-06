@@ -8,6 +8,7 @@ const ProductDashboard = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({
         productName: "",
         description: "",
@@ -85,11 +86,6 @@ const ProductDashboard = () => {
     };
 
     const fetchCategories = async () => {
-        if (loading) {
-            console.log('ProductDashboard: fetchCategories called while loading, skipping');
-            return;
-        }
-
         console.log('ProductDashboard: fetchCategories called');
 
         try {

@@ -28,9 +28,9 @@ const Navbar = () => {
             <div className="container">
                 <Link to={"/"} className="navbar-brand fw-bold d-flex align-items-center">
                     <div className="bg-primary text-white rounded-3 me-2 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px', fontSize: '16px' }}>
-                        W
+                        FF
                     </div>
-                    <span className="text-dark font-premium" style={{ letterSpacing: '-0.01em' }}>Workflow</span>
+                    <span className="text-dark font-premium" style={{ letterSpacing: '-0.01em' }}>FlowForge</span>
                 </Link>
 
                 <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -73,6 +73,22 @@ const Navbar = () => {
                         )}
                         {isAdmin && (
                             <>
+                                <li className="nav-item">
+                                    <Link
+                                        to={"/ops/dashboard"}
+                                        className="nav-link-tech d-flex align-items-center me-2"
+                                        style={{
+                                            backgroundColor: location.pathname.startsWith('/ops') ? '#0d6efd' : 'transparent',
+                                            color: location.pathname.startsWith('/ops') ? '#fff' : 'inherit',
+                                            padding: '6px 12px',
+                                            borderRadius: '6px',
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        <i className="bi bi-diagram-3 me-1"></i>
+                                        Operations Console
+                                    </Link>
+                                </li>
                                 <li className="nav-item">
                                     <Link to={"/admin/categories"} className={`nav-link-tech ${location.pathname === '/admin/categories' ? 'active' : ''}`}>
                                         Category Management
