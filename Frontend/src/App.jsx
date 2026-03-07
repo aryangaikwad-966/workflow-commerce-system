@@ -5,6 +5,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./App.css";
 
 import Navbar from "./components/Navbar";
+import ErrorBoundary from "./components/ErrorBoundary";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import CategoryDashboard from "./pages/Admin/CategoryDashboard";
@@ -23,6 +24,7 @@ import ShippingDashboard from "./pages/Admin/ShippingDashboard";
 import ReviewDashboard from "./pages/Admin/ReviewDashboard";
 import CouponDashboard from "./pages/Admin/CouponDashboard";
 import { CartProvider } from "./contexts/CartContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Operations Dashboard imports
 import OperationsLayout from "./components/OperationsLayout";
@@ -133,120 +135,124 @@ const Footer = () => (
 
 function App() {
   return (
-    <CartProvider>
-      <Routes>
-        {/* Operations Console - Separate layout with sidebar */}
-        <Route path="/ops" element={<OperationsLayout />}>
-          <Route index element={<OperationsDashboard />} />
-          <Route path="dashboard" element={<OperationsDashboard />} />
-          <Route path="workflows" element={<WorkflowsPage />} />
-          <Route path="workflows/:instanceId" element={<WorkflowDetails />} />
-          <Route path="orders" element={<OpsOrdersPage />} />
-          <Route path="payments" element={<PaymentDashboard />} />
-          <Route path="shipping" element={<ShippingDashboard />} />
-          <Route path="products" element={<ProductDashboard />} />
-          <Route path="categories" element={<CategoryDashboard />} />
-          <Route path="customers" element={<CustomerDashboard />} />
-          <Route path="carts" element={<CartDashboard />} />
-          <Route path="reviews" element={<ReviewDashboard />} />
-          <Route path="coupons" element={<CouponDashboard />} />
-          <Route path="logs" element={<AuditLogsPage />} />
-        </Route>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <Routes>
+            {/* Operations Console - Separate layout with sidebar */}
+            <Route path="/ops" element={<OperationsLayout />}>
+              <Route index element={<OperationsDashboard />} />
+              <Route path="dashboard" element={<OperationsDashboard />} />
+              <Route path="workflows" element={<WorkflowsPage />} />
+              <Route path="workflows/:instanceId" element={<WorkflowDetails />} />
+              <Route path="orders" element={<OpsOrdersPage />} />
+              <Route path="payments" element={<PaymentDashboard />} />
+              <Route path="shipping" element={<ShippingDashboard />} />
+              <Route path="products" element={<ProductDashboard />} />
+              <Route path="categories" element={<CategoryDashboard />} />
+              <Route path="customers" element={<CustomerDashboard />} />
+              <Route path="carts" element={<CartDashboard />} />
+              <Route path="reviews" element={<ReviewDashboard />} />
+              <Route path="coupons" element={<CouponDashboard />} />
+              <Route path="logs" element={<AuditLogsPage />} />
+            </Route>
 
-        {/* Customer-facing routes with standard Navbar/Footer */}
-        <Route path="/*" element={
-          <div>
-            <Navbar />
-            <div className="container">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/products" element={<ProductCatalog />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/orders" element={<MyOrders />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route
-                  path="/admin/categories"
-                  element={
-                    <AdminRoute>
-                      <CategoryDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/products"
-                  element={
-                    <AdminRoute>
-                      <ProductDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/orders"
-                  element={
-                    <AdminRoute>
-                      <OrderDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/customers"
-                  element={
-                    <AdminRoute>
-                      <CustomerDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/payments"
-                  element={
-                    <AdminRoute>
-                      <PaymentDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/carts"
-                  element={
-                    <AdminRoute>
-                      <CartDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/shipping"
-                  element={
-                    <AdminRoute>
-                      <ShippingDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/reviews"
-                  element={
-                    <AdminRoute>
-                      <ReviewDashboard />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/coupons"
-                  element={
-                    <AdminRoute>
-                      <CouponDashboard />
-                    </AdminRoute>
-                  }
-                />
-              </Routes>
-            </div>
-            <Footer />
-          </div>
-        } />
-      </Routes>
-    </CartProvider>
+            {/* Customer-facing routes with standard Navbar/Footer */}
+            <Route path="/*" element={
+              <div>
+                <Navbar />
+                <div className="container">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/home" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/products" element={<ProductCatalog />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/orders" element={<MyOrders />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route
+                      path="/admin/categories"
+                      element={
+                        <AdminRoute>
+                          <CategoryDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/products"
+                      element={
+                        <AdminRoute>
+                          <ProductDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/orders"
+                      element={
+                        <AdminRoute>
+                          <OrderDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/customers"
+                      element={
+                        <AdminRoute>
+                          <CustomerDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/payments"
+                      element={
+                        <AdminRoute>
+                          <PaymentDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/carts"
+                      element={
+                        <AdminRoute>
+                          <CartDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/shipping"
+                      element={
+                        <AdminRoute>
+                          <ShippingDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/reviews"
+                      element={
+                        <AdminRoute>
+                          <ReviewDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin/coupons"
+                      element={
+                        <AdminRoute>
+                          <CouponDashboard />
+                        </AdminRoute>
+                      }
+                    />
+                  </Routes>
+                </div>
+                <Footer />
+              </div>
+            } />
+          </Routes>
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

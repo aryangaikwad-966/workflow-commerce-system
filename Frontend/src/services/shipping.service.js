@@ -1,7 +1,8 @@
 import axios from "axios";
 import authHeader from "./auth-header";
 
-const API_URL = "http://localhost:8080/api/shipping/";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080/api/auth/";
+const API_URL = API_BASE.replace("/auth/", "/shipping/");
 
 const calculateShippingCost = (shippingMethod, destination) => {
     return axios.post(API_URL + "calculate-cost", { shippingMethod, destination }, { headers: authHeader() });

@@ -1,17 +1,26 @@
 package com.example.workflowcommerce.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.workflowcommerce.dto.CouponApplyRequest;
 import com.example.workflowcommerce.dto.CouponApplyResponse;
 import com.example.workflowcommerce.dto.CouponCreateRequest;
 import com.example.workflowcommerce.model.Coupon;
 import com.example.workflowcommerce.service.CouponService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/coupons")
@@ -22,7 +31,7 @@ public class CouponController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> createCoupon(@RequestBody CouponCreateRequest request) {
+    public ResponseEntity<?> createCoupon(@Valid @RequestBody CouponCreateRequest request) {
         try {
             Coupon coupon = couponService.createCoupon(request);
             return ResponseEntity.ok(coupon);
@@ -33,7 +42,7 @@ public class CouponController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateCoupon(@PathVariable Long id, @RequestBody CouponCreateRequest request) {
+    public ResponseEntity<?> updateCoupon(@PathVariable Long id, @Valid @RequestBody CouponCreateRequest request) {
         try {
             Coupon coupon = couponService.updateCoupon(id, request);
             return ResponseEntity.ok(coupon);

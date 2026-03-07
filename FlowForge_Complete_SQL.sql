@@ -180,6 +180,7 @@ CREATE TABLE IF NOT EXISTS products (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE,
+    version BIGINT DEFAULT 0,
     FOREIGN KEY (category_id) REFERENCES categories(category_id),
     INDEX idx_sku (sku),
     INDEX idx_category (category_id),
@@ -282,6 +283,7 @@ CREATE TABLE IF NOT EXISTS orders (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE,
+    version BIGINT DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user_id (user_id),
     INDEX idx_order_status (order_status),
@@ -437,6 +439,7 @@ CREATE TABLE IF NOT EXISTS payments (
     payment_status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    version BIGINT DEFAULT 0,
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     UNIQUE KEY uk_payment_order (order_id),
     INDEX idx_payment_status (payment_status)

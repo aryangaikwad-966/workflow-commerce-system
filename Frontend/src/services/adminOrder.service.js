@@ -1,7 +1,8 @@
 import axios from "axios";
 import authHeader from "./auth-header";
 
-const ORDER_API_URL = "http://localhost:8080/api/orders";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080/api/auth/";
+const ORDER_API_URL = API_BASE.replace("/auth/", "/orders");
 
 const getAllOrders = () => {
     return axios.get(ORDER_API_URL, { headers: authHeader() });

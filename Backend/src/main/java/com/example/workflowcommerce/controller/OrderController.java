@@ -210,7 +210,15 @@ public class OrderController {
     @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<?> cancelOwnOrder(@PathVariable Long id, Authentication authentication) {
         try {
-            User currentUser = (User) authentication.getPrincipal();
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String username = userDetails.getUsername();
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(new MessageResponse("User not found"));
+            }
+            
+            User currentUser = userOpt.get();
             Optional<Order> orderOpt = orderService.getUserOrderById(id, currentUser.getId());
             
             if (orderOpt.isEmpty()) {

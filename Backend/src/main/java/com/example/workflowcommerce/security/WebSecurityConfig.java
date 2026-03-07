@@ -77,6 +77,14 @@ public class WebSecurityConfig {
         .securityContext(securityContext -> securityContext
             .securityContextRepository(new org.springframework.security.web.context.RequestAttributeSecurityContextRepository())
         )
+        // Security Headers
+        .headers(headers -> headers
+            .frameOptions(frame -> frame.deny())
+            .xssProtection(xss -> xss.disable()) // Modern browsers handle XSS
+            .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; frame-ancestors 'none';"))
+            .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
+            .contentTypeOptions(contentType -> {})
+        )
         .authorizeHttpRequests(auth -> 
           auth.requestMatchers("/api/auth/**").permitAll()
               .requestMatchers("/api/products/public").permitAll()
