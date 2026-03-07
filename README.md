@@ -37,46 +37,46 @@ Real-time metrics showing active workflows, order pipeline status, and KPI cards
 </td>
 <td width="50%">
 
-### Workflow State Management
-Interactive state visualization displaying current order states, transition buttons, and workflow instance details.
+### Order Operations
+Interactive order lifecycle management with status tracking, workflow state transitions, and action controls.
 
-![Workflow States](screenshots/workflow-states.png)
+![Order Operations](screenshots/workflow-states.png)
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### Audit Logs
+### Operations Dashboard
 Chronological event log capturing every state transition with performer identity, timestamps, and action context.
 
-![Audit Logs](screenshots/audit-logs.png)
+![Operations Dashboard](screenshots/audit-logs.png)
 
 </td>
 <td width="50%">
 
-### Order Management
-Order lifecycle view with status badges, payment verification, shipping tracking, and workflow state integration.
+### Payment Management
+Payment processing interface with transaction status, payment method tracking, and order-payment linking.
 
-![Order Management](screenshots/order-management.png)
+![Payment Management](screenshots/order-management.png)
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### Product Catalog
-Inventory management interface with category filtering, stock levels, pricing controls, and product status toggles.
+### Workflows
+Workflow definitions and state machine configurations with visual state diagrams and transition rules.
 
-![Product Catalog](screenshots/product-catalog.png)
+![Workflows](screenshots/product-catalog.png)
 
 </td>
 <td width="50%">
 
-### Admin Panel
-Centralized control center for managing users, categories, coupons, reviews, and system configuration.
+### Shipping Dashboard
+Shipment tracking and fulfillment management with courier details, tracking numbers, and delivery status.
 
-![Admin Panel](screenshots/admin-panel.png)
+![Shipping Dashboard](screenshots/admin-panel.png)
 
 </td>
 </tr>
