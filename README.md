@@ -225,10 +225,10 @@ Shipment tracking and fulfillment management with courier details, tracking numb
 ### Transition Rules & Business Validation
 | Transition | Business Rules | Authorized Roles |
 |------------|----------------|------------------|
-| CREATED → PAYMENT_PENDING | Auto-transition on order creation | SYSTEM |
+| CREATED → PAYMENT_PENDING | Auto-transition on order creation | SYSTEM, USER, ADMIN |
 | PAYMENT_PENDING → PAID | `Payment.status = COMPLETED` | SYSTEM, ADMIN |
 | PAYMENT_PENDING → CANCELLED | `Payment.status = FAILED` or user cancel | USER, ADMIN |
-| PAID → PROCESSING | Admin verification required | ADMIN |
+| PAID → PROCESSING | Auto-transition after payment verified | SYSTEM, ADMIN |
 | PROCESSING → SHIPPED | `Shipping record exists`, `TrackingNumber != null` | ADMIN |
 | SHIPPED → DELIVERED | `Shipping.status = Delivered` | ADMIN, SYSTEM |
 | PAID/PROCESSING/SHIPPED → REFUNDED | Comment required, triggers `PaymentRefundedEvent` | ADMIN |
